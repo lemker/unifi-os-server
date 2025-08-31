@@ -112,11 +112,19 @@ service mongodb status
 service service rabbitmq-server status
 ```
 
+### Set System IP
+
+
+1. Exec into container
+2. Update `/var/lib/unifi/system.properties`
+
+   ```yaml
+   system_ip=xxx.xxx.xxx.xxx
+   ```
+
 # Known Issues
 
 * Container runs in `privileged` mode, which gives full access to host kernel, devices, etc. This can probably be tightened up once more integrations are added and there is a better understanding of permission requirements
 * Updating UniFi integrations through the UniFi OS Server web interface might not work properly and break UniFi Network or other services
 * Incorrect directory permissions on initial install for NGINX and MongoDB services
 * Accessing the web interface with a domain name is blocked due to local IP check on initial install
-
-
