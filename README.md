@@ -7,14 +7,14 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 > <https://help.ui.com/hc/en-us/articles/34210126298775-Self-Hosting-UniFi>
 
 
-⚠️ Please note that UniFi OS Server is currently in early access and might not be stable enough to run in production. The layout of this project and associated resources might change without notice. ⚠️
+⚠️ Please note that UniFi OS Server is currently in early access and might not be stable enough to run in production. The layout of this project and associated resources might change without notice.
 
 # Installation
 
 ## Methods
 
-* Docker Compose
-* Kubernetes
+* [Docker Compose](https://github.com/lemker/unifi-os-server/tree/main?tab=readme-ov-file#docker-compose)
+* [Kubernetes](https://github.com/lemker/unifi-os-server/tree/main?tab=readme-ov-file#kubernetes)
 
 ### Docker Compose
 
@@ -41,27 +41,47 @@ services:
       - /path/to/uosserver/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
       - 11443:443
-      - 5005:5005
-      - 9543:9543
-      - 6789:6789 
+      - 5005:5005 # Optional
+      - 9543:9543 # Optional
+      - 6789:6789 # Optional
       - 8080:8080
-      - 8443:8443
-      - 8444:8444
+      - 8443:8443 # Optional
+      - 8444:8444 # Optional
       - 3478:3478/udp
-      - 5514:5514/udp
+      - 5514:5514/udp # Optional
       - 10003:10003/udp
-      - 5671:5671
-      - 8880:8880
-      - 8881:8881
-      - 8882:8882
+      - 5671:5671 # Optional
+      - 8880:8880 # Optional
+      - 8881:8881 # Optional
+      - 8882:8882 # Optional
     restart: unless-stopped
 ```
 
 ### Kubernetes
 
-Please see [kubernetes.yaml](https://github.com/lemker/unifi-os-server/blob/main/kubernetes.yaml)
+See [kubernetes.yaml](https://github.com/lemker/unifi-os-server/blob/main/kubernetes.yaml)
 
 Generate a UUID for your instance and set the environment variable `UOS_UUID`. Deployment example uses [ingress-nginx](https://github.com/kubernetes/ingress-nginx) for the ingress and [longhorn](https://github.com/longhorn/longhorn) for storage.
+
+Your ingress controller must be modified to accept extra ports. For example, `ingress-nginx` Helm values:
+
+```bash
+tcp:
+  5005: "unifi/uosserver-rtp-svc:5005" # Optional
+  9543: "unifi/uosserver-id-hub-svc:9543" # Optional
+  6789: "unifi/uosserver-mobile-speedtest-svc:6789" # Optional
+  8080: "unifi/uosserver-communication-svc:8080"
+  8443: "unifi/uosserver-network-app-svc:8443" # Optional
+  8444: "unifi/uosserver-hotspot-secured-svc:8444" # Optional
+  5671: "unifi/uosserver-aqmps-svc:5671" # Optional
+  8880: "unifi/uosserver-hotspot-redirect-0-svc:8880" # Optional
+  8881: "unifi/uosserver-hotspot-redirect-1-svc:8881" # Optional
+  8882: "unifi/uosserver-hotspot-redirect-2-svc:8882" # Optional
+udp:
+  3478: "unifi/uosserver-stun-svc:3478"
+  5514: "unifi/uosserver-syslog-svc:5514" # Optional
+  10003: "unifi/uosserver-discovery-svc:10003"
+```
 
 Helm charts coming soon, once more integrations are added to the upstream container and there is a better understanding of the overall structure.
 
@@ -106,6 +126,35 @@ service rabbitmq-server status
    ```bash
    service unifi restart
    ```
+
+# Parameters
+
+## Environment Variables
+
+| Env | Function |
+|----|----|
+| UOS_UUID | UUID for your Unifi OS Server instance |
+| UOS_SERVER_VERSION | Unifi Server OS version (bundled with image) |
+| FIRMWARE_PLATFORM | Host firmware platform |
+
+## Ports
+
+| Protocol | Port | Direction | Usage |
+|----|----|----|----|
+| TCP | 11443 | Ingress | Unifi OS Server GUI/API |
+| TCP | 5005 | ? | RTP (Real-time Transport Protocol) control protocol |
+| TCP | 9543 | ? | UniFi Identity Hub |
+| TCP | 6789 | Ingress | UniFi mobile speed test |
+| TCP | 8080 | Ingress | Device and application communication |
+| TCP | 8443 | Ingress | UniFi Network Application GUI/API |
+| TCP | 8444 | Ingress | Secure Portal for Hotspot |
+| UDP | 3478 | Both | STUN for device adoption and communication *(also required for Remote Management)* |
+| UDP | 5514 | Ingress | Remote syslog capture |
+| UDP | 10003 | Ingress | Device discovery during adoption |
+| TCP | 5671 | ? | AQMPS |
+| TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |
+| TCP | 8881 | Ingress | Hotspot portal redirection (HTTP) |
+| TCP | 8882 | Ingress | Hotspot portal redirection (HTTP) |
 
 # Known Issues
 
