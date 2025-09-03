@@ -20,8 +20,6 @@ spec:
       - name: uosserver
         image: ghcr.io/lemker/uosserver:0.0.47
         env:
-        - name: TZ
-          value: "Etc/UTC"
         - name: UOS_UUID
           value: ""
         - name: UOS_SERVER_VERSION
@@ -87,7 +85,98 @@ spec:
   ports:
   - name: webui
     port: 443
+    protocol: TCP
     targetPort: 443
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-rtp-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: rtp
+    port: 5005
+    protocol: TCP
+    targetPort: 5005
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-id-hub-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: id-hub
+    port: 9543
+    protocol: TCP
+    targetPort: 9543
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-mobile-speedtest-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: mobile-speedtest
+    port: 6789
+    protocol: TCP
+    targetPort: 6789
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-communication-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: communication
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-network-app-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: network-app
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-hotspot-secured-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-secured
+    port: 8444
+    protocol: TCP
+    targetPort: 8444
   selector:
     app: uosserver
 
@@ -101,8 +190,8 @@ spec:
   ports:
   - name: stun
     port: 3478
-    targetPort: 3478
     protocol: UDP
+    targetPort: 3478
   selector:
     app: uosserver
 
@@ -110,13 +199,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: uosserver-com-svc
+  name: uosserver-syslog-svc
   namespace: unifi
 spec:
   ports:
-  - name: com
-    port: 8080
-    targetPort: 8080
+  - name: syslog
+    port: 5514
+    protocol: UDP
+    targetPort: 5514
   selector:
     app: uosserver
 
@@ -130,8 +220,68 @@ spec:
   ports:
   - name: discovery
     port: 10003
-    targetPort: 10003
     protocol: UDP
+    targetPort: 10003
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-aqmps-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: aqmps
+    port: 5671
+    protocol: TCP
+    targetPort: 5671
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-hotspot-redirect-0-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-0
+    port: 8880
+    protocol: TCP
+    targetPort: 8880
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-hotspot-redirect-1-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-1
+    port: 8881
+    protocol: TCP
+    targetPort: 8881
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-hotspot-redirect-2-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-2
+    port: 8882
+    protocol: TCP
+    targetPort: 8882
   selector:
     app: uosserver
 
