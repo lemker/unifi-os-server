@@ -13,8 +13,8 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 ## Methods
 
-* Docker Compose (not tested)
-* Kubernetes (recommended)
+* Docker Compose
+* Kubernetes
 
 ### Docker Compose
 
@@ -26,8 +26,8 @@ services:
   unifi-network-application:
     image: ghcr.io/lemker/uosserver:0.0.47
     container_name: uosserver
+    privileged: true
     environment:
-      - TZ=Etc/UTC
       - UOS_UUID=
       - UOS_SERVER_VERSION=4.3.4
       - FIRMWARE_PLATFORM=linux-x64
@@ -54,9 +54,6 @@ services:
       - 8880:8880
       - 8881:8881
       - 8882:8882
-    cap_add:
-    - NET_RAW
-    - NET_ADMIN
     restart: unless-stopped
 ```
 
@@ -72,34 +69,17 @@ Helm charts coming soon, once more integrations are added to the upstream contai
 
 ### Fix Directory Permissions
 
-Exec into the container and run:
 
-```bash
-mkdir /var/log/nginx
-chown -R nginx:nginx /var/log/nginx
-chown -R mongodb:mongodb /var/lib/mongodb
-mkdir /var/log/mongodb
-chown -R mongodb:mongodb /var/log/mongodb
-```
-
-### Disable Redirect for Domains
-
-If using a domain to access the UniFi Server OS web interface like `https://unifi.example.com`, disable the internal redirect:
-
-
-1. Exec into container
-2. Edit `/data/unifi-core/config/http/site-setup.conf` and comment out the following block:
+1. Exec into the container and run:
 
    ```bash
-   if ($host !~* ^(unifi|localhost|[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|\[[a-f0-9:]+\])$) {
-       return 302 $scheme://unifi;
-   }
+   mkdir /var/log/nginx 
+   chown -R nginx:nginx /var/log/nginx
+   mkdir /var/log/mongodb
+   chown -R mongodb:mongodb /var/log/mongodb
+   chown -R mongodb:mongodb /var/lib/mongodb
    ```
-3. Reload config:
-
-   ```yaml
-   service nginx reload
-   ```
+2. Restart container
 
 ### Check Services
 
@@ -109,7 +89,7 @@ Ensure that all UniFi OS Server services are up and running:
 service unifi status
 service nginx status
 service mongodb status
-service service rabbitmq-server status
+service rabbitmq-server status
 ```
 
 ### Set System IP
@@ -121,10 +101,14 @@ service service rabbitmq-server status
    ```yaml
    system_ip=xxx.xxx.xxx.xxx
    ```
+3. Restart `unifi` service:
+
+   ```bash
+   service unifi restart
+   ```
 
 # Known Issues
 
 * Container runs in `privileged` mode, which gives full access to host kernel, devices, etc. This can probably be tightened up once more integrations are added and there is a better understanding of permission requirements
 * Updating UniFi integrations through the UniFi OS Server web interface might not work properly and break UniFi Network or other services
 * Incorrect directory permissions on initial install for NGINX and MongoDB services
-* Accessing the web interface with a domain name is blocked due to local IP check on initial install
