@@ -18,18 +18,16 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 ### Docker Compose
 
-Generate a UUID for your instance and set the environment variable `UOS_UUID`
-
 ```yaml
 ---
 services:
-  unifi-network-application:
-    image: ghcr.io/lemker/uosserver:0.0.47
+  unifi-os-server:
+    image: ghcr.io/lemker/uosserver:0.0.48
     container_name: uosserver
     privileged: true
     environment:
       - UOS_UUID=
-      - UOS_SERVER_VERSION=4.3.4
+      - UOS_SERVER_VERSION=4.3.5
       - FIRMWARE_PLATFORM=linux-x64
     volumes:
       - /path/to/uosserver/persistent:/persistent
@@ -50,6 +48,7 @@ services:
       - 3478:3478/udp
       - 5514:5514/udp # Optional
       - 10003:10003/udp
+      - 11084:11084 # Optional
       - 5671:5671 # Optional
       - 8880:8880 # Optional
       - 8881:8881 # Optional
@@ -61,7 +60,7 @@ services:
 
 See [kubernetes.yaml](https://github.com/lemker/unifi-os-server/blob/main/kubernetes.yaml)
 
-Generate a UUID for your instance and set the environment variable `UOS_UUID`. Deployment example uses [ingress-nginx](https://github.com/kubernetes/ingress-nginx) for the ingress and [longhorn](https://github.com/longhorn/longhorn) for storage.
+Deployment example uses [ingress-nginx](https://github.com/kubernetes/ingress-nginx) for the ingress and [longhorn](https://github.com/longhorn/longhorn) for storage.
 
 Your ingress controller must be modified to accept extra ports. For example, `ingress-nginx` Helm values:
 
@@ -73,6 +72,7 @@ tcp:
   8080: "unifi/uosserver-communication-svc:8080"
   8443: "unifi/uosserver-network-app-svc:8443" # Optional
   8444: "unifi/uosserver-hotspot-secured-svc:8444" # Optional
+  11084: "unifi/uosserver-site-supervisor-svc:11084" # Optional
   5671: "unifi/uosserver-aqmps-svc:5671" # Optional
   8880: "unifi/uosserver-hotspot-redirect-0-svc:8880" # Optional
   8881: "unifi/uosserver-hotspot-redirect-1-svc:8881" # Optional
@@ -137,6 +137,10 @@ service rabbitmq-server status
 | UOS_SERVER_VERSION | Unifi Server OS version (bundled with image) |
 | FIRMWARE_PLATFORM | Host firmware platform |
 
+### UOS_UUID
+
+Works with any v5 UUID, is probably only used to differentiate installations when connecting via <https://unifi.ui.com/> or the app.
+
 ## Ports
 
 | Protocol | Port | Direction | Usage |
@@ -151,6 +155,7 @@ service rabbitmq-server status
 | UDP | 3478 | Both | STUN for device adoption and communication *(also required for Remote Management)* |
 | UDP | 5514 | Ingress | Remote syslog capture |
 | UDP | 10003 | Ingress | Device discovery during adoption |
+| TCP | 11084 | Ingress | UniFi Site Supervisor |
 | TCP | 5671 | ? | AQMPS |
 | TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |
 | TCP | 8881 | Ingress | Hotspot portal redirection (HTTP) |
@@ -159,5 +164,5 @@ service rabbitmq-server status
 # Known Issues
 
 * Container runs in `privileged` mode, which gives full access to host kernel, devices, etc. This can probably be tightened up once more integrations are added and there is a better understanding of permission requirements
-* Updating UniFi integrations through the UniFi OS Server web interface might not work properly and break UniFi Network or other services
+* Updating UniFi integrations through the UniFi OS Server web interface might not work properly and break UniFi Network or other services.
 * Incorrect directory permissions on initial install for NGINX and MongoDB services
