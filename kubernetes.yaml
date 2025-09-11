@@ -18,12 +18,12 @@ spec:
     spec:
       containers:
       - name: uosserver
-        image: ghcr.io/lemker/uosserver:0.0.47
+        image: ghcr.io/lemker/uosserver:0.0.48
         env:
         - name: UOS_UUID
           value: ""
         - name: UOS_SERVER_VERSION
-          value: "4.3.4"
+          value: "4.3.5"
         - name: FIRMWARE_PLATFORM
           value: "linux-x64"
         securityContext:
@@ -222,6 +222,21 @@ spec:
     port: 10003
     protocol: UDP
     targetPort: 10003
+  selector:
+    app: uosserver
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uosserver-site-supervisor-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: site-supervisor
+    port: 11084
+    protocol: TCP
+    targetPort: 11084
   selector:
     app: uosserver
 
