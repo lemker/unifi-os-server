@@ -23,7 +23,7 @@ spec:
         - name: UOS_UUID
           value: ""
         - name: UOS_SERVER_VERSION
-          value: "4.3.5"
+          value: "4.3.6"
         - name: FIRMWARE_PLATFORM
           value: "linux-x64"
         securityContext:
