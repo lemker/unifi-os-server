@@ -27,7 +27,7 @@ services:
     privileged: true
     environment:
       - UOS_UUID=
-      - UOS_SERVER_VERSION=4.3.5
+      - UOS_SERVER_VERSION=4.3.6
       - FIRMWARE_PLATFORM=linux-x64
     volumes:
       - /path/to/uosserver/persistent:/persistent
