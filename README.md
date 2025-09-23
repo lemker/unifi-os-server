@@ -22,7 +22,7 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 ---
 services:
   unifi-os-server:
-    image: ghcr.io/lemker/uosserver:0.0.48
+    image: ghcr.io/lemker/uosserver:0.0.49
     container_name: uosserver
     privileged: true
     environment:
