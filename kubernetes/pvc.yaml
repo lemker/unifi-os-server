@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi-os-server-pvc
+  namespace: unifi
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce  
+  resources:
+    requests:
+      storage: 32Gi

@@ -3,6 +3,10 @@ name: Create and publish image on push to dev branch
 on:
   push:
     branches: ['dev']
+    paths-ignore:
+      - 'kubernetes/**'
+      - 'docker-compose.yaml'
+      - '**.md'
 
 env:
   REGISTRY: ghcr.io

@@ -1,0 +1,223 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-webui-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: webui
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-rtp-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: rtp
+    port: 5005
+    protocol: TCP
+    targetPort: 5005
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-id-hub-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: id-hub
+    port: 9543
+    protocol: TCP
+    targetPort: 9543
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-mobile-speedtest-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: mobile-speedtest
+    port: 6789
+    protocol: TCP
+    targetPort: 6789
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-communication-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: communication
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-network-app-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: network-app
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-hotspot-secured-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-secured
+    port: 8444
+    protocol: TCP
+    targetPort: 8444
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-stun-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: stun
+    port: 3478
+    protocol: UDP
+    targetPort: 3478
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-syslog-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: syslog
+    port: 5514
+    protocol: UDP
+    targetPort: 5514
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-discovery-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: discovery
+    port: 10003
+    protocol: UDP
+    targetPort: 10003
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-site-supervisor-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: site-supervisor
+    port: 11084
+    protocol: TCP
+    targetPort: 11084
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-aqmps-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: aqmps
+    port: 5671
+    protocol: TCP
+    targetPort: 5671
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-hotspot-redirect-0-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-0
+    port: 8880
+    protocol: TCP
+    targetPort: 8880
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-hotspot-redirect-1-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-1
+    port: 8881
+    protocol: TCP
+    targetPort: 8881
+  selector:
+    app: unifi-os-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-os-server-hotspot-redirect-2-svc
+  namespace: unifi
+spec:
+  ports:
+  - name: hotspot-redirect-2
+    port: 8882
+    protocol: TCP
+    targetPort: 8882
+  selector:
+    app: unifi-os-server
