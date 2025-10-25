@@ -7,7 +7,10 @@ if [ ! -f /data/uos_uuid ]; then
         echo "$UOS_UUID" > /data/uos_uuid
     else
         echo "No UUID present, generating..."
-        UOS_UUID=$(cat /proc/sys/kernel/random/uuid)
+        UUID=$(cat /proc/sys/kernel/random/uuid)
+
+        # Spoof a v5 UUID
+        UOS_UUID=$(echo $UUID | sed s/./5/15)
         echo "Setting UUID to $UOS_UUID"
         echo "$UOS_UUID" > /data/uos_uuid
     fi
