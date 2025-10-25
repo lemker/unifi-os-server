@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-os-server
+  namespace: unifi
+  labels:
+    app: unifi-os-server
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: unifi-os-server
+  template:
+    metadata:
+      labels:
+        app: unifi-os-server
+    spec:
+      containers:
+      - name: unifi-os-server
+        image: ghcr.io/lemker/unifi-os-server:latest
+        env:
+        - name: UOS_SYSTEM_IP
+          value: "unifi.example.com"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: unifi-os-server-data
+          mountPath: /persistent
+          subPath: persistent
+        - name: unifi-os-server-data
+          mountPath: /var/log
+          subPath: log
+        - name: unifi-os-server-data
+          mountPath: /data
+          subPath: data
+        - name: unifi-os-server-data
+          mountPath: /srv
+          subPath: srv
+        - name: unifi-os-server-data
+          mountPath: /var/lib/unifi
+          subPath: unifi
+        - name: unifi-os-server-data
+          mountPath: /var/lib/mongodb
+          subPath: mongodb
+        - name: unifi-os-server-data
+          mountPath: /etc/rabbitmq/ssl
+          subPath: rabbitmq
+        livenessProbe:
+          httpGet:
+            path: /api/ping
+            port: 80
+          initialDelaySeconds: 10          
+          periodSeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+      volumes:
+      - name: unifi-os-server-data
+        persistentVolumeClaim:
+          claimName: unifi-os-server-pvc
