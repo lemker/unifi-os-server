@@ -6,11 +6,8 @@ if [ ! -f /data/uos_uuid ]; then
         echo "Setting UUID to $UOS_UUID"
         echo "$UOS_UUID" > /data/uos_uuid
     else
-        echo "No UUID present, creating..."
-        apt-get update && apt-get install -y uuid-runtime
-        UUID_NAME=$(uuidgen)
-        UUID_NAMESPACE=$(uuidgen)
-        UOS_UUID=$(uuidgen --name $UUID_NAME --namespace $UUID_NAMESPACE --sha1)
+        echo "No UUID present, generating..."
+        UOS_UUID=$(cat /proc/sys/kernel/random/uuid)
         echo "Setting UUID to $UOS_UUID"
         echo "$UOS_UUID" > /data/uos_uuid
     fi
