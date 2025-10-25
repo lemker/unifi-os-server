@@ -6,9 +6,6 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 >
 > <https://help.ui.com/hc/en-us/articles/34210126298775-Self-Hosting-UniFi>
 
-
-⚠️ Please note that UniFi OS Server is currently in early access and might not be stable enough to run in production. The layout of this project and associated resources might change without notice.
-
 # Installation
 
 ## Methods
@@ -18,47 +15,11 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 ### Docker Compose
 
-```yaml
----
-services:
-  unifi-os-server:
-    image: ghcr.io/lemker/uosserver:0.0.49
-    container_name: uosserver
-    privileged: true
-    environment:
-      - UOS_UUID=
-      - UOS_SERVER_VERSION=4.3.6
-      - FIRMWARE_PLATFORM=linux-x64
-    volumes:
-      - /path/to/uosserver/persistent:/persistent
-      - /path/to/uosserver/var-log:/var/log
-      - /path/to/uosserver/data:/data
-      - /path/to/uosserver/srv:/srv
-      - /path/to/uosserver/var-lib-unifi:/var/lib/unifi
-      - /path/to/uosserver/var-lib-mongodb:/var/lib/mongodb
-      - /path/to/uosserver/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
-    ports:
-      - 11443:443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
-      - 8080:8080
-      - 8443:8443 # Optional
-      - 8444:8444 # Optional
-      - 3478:3478/udp
-      - 5514:5514/udp # Optional
-      - 10003:10003/udp
-      - 11084:11084 # Optional
-      - 5671:5671 # Optional
-      - 8880:8880 # Optional
-      - 8881:8881 # Optional
-      - 8882:8882 # Optional
-    restart: unless-stopped
-```
+See [docker-compose.yaml](https://github.com/lemker/unifi-os-server/blob/main/docker-compose.yaml)
 
 ### Kubernetes
 
-See [kubernetes.yaml](https://github.com/lemker/unifi-os-server/blob/main/kubernetes.yaml)
+See [kubernetes](https://github.com/lemker/unifi-os-server/tree/main/kubernetes)
 
 Deployment example uses [ingress-nginx](https://github.com/kubernetes/ingress-nginx) for the ingress and [longhorn](https://github.com/longhorn/longhorn) for storage.
 
@@ -66,88 +27,50 @@ Your ingress controller must be modified to accept extra ports. For example, `in
 
 ```bash
 tcp:
-  5005: "unifi/uosserver-rtp-svc:5005" # Optional
-  9543: "unifi/uosserver-id-hub-svc:9543" # Optional
-  6789: "unifi/uosserver-mobile-speedtest-svc:6789" # Optional
-  8080: "unifi/uosserver-communication-svc:8080"
-  8443: "unifi/uosserver-network-app-svc:8443" # Optional
-  8444: "unifi/uosserver-hotspot-secured-svc:8444" # Optional
-  11084: "unifi/uosserver-site-supervisor-svc:11084" # Optional
-  5671: "unifi/uosserver-aqmps-svc:5671" # Optional
-  8880: "unifi/uosserver-hotspot-redirect-0-svc:8880" # Optional
-  8881: "unifi/uosserver-hotspot-redirect-1-svc:8881" # Optional
-  8882: "unifi/uosserver-hotspot-redirect-2-svc:8882" # Optional
+  5005: "unifi/unifi-os-server-rtp-svc:5005" # Optional
+  9543: "unifi/unifi-os-server-id-hub-svc:9543" # Optional
+  6789: "unifi/unifi-os-server-mobile-speedtest-svc:6789" # Optional
+  8080: "unifi/unifi-os-server-communication-svc:8080"
+  8443: "unifi/unifi-os-server-network-app-svc:8443" # Optional
+  8444: "unifi/unifi-os-server-hotspot-secured-svc:8444" # Optional
+  11084: "unifi/unifi-os-server-site-supervisor-svc:11084" # Optional
+  5671: "unifi/unifi-os-server-aqmps-svc:5671" # Optional
+  8880: "unifi/unifi-os-server-hotspot-redirect-0-svc:8880" # Optional
+  8881: "unifi/unifi-os-server-hotspot-redirect-1-svc:8881" # Optional
+  8882: "unifi/unifi-os-server-hotspot-redirect-2-svc:8882" # Optional
 udp:
-  3478: "unifi/uosserver-stun-svc:3478"
-  5514: "unifi/uosserver-syslog-svc:5514" # Optional
-  10003: "unifi/uosserver-discovery-svc:10003"
+  3478: "unifi/unifi-os-server-stun-svc:3478"
+  5514: "unifi/unifi-os-server-syslog-svc:5514" # Optional
+  10003: "unifi/unifi-os-server-discovery-svc:10003"
 ```
-
-Helm charts coming soon, once more integrations are added to the upstream container and there is a better understanding of the overall structure.
-
-## Post-Installation Steps
-
-### Fix Directory Permissions
-
-
-1. Exec into the container and run:
-
-   ```bash
-   mkdir /var/log/nginx 
-   chown -R nginx:nginx /var/log/nginx
-   mkdir /var/log/mongodb
-   chown -R mongodb:mongodb /var/log/mongodb
-   chown -R mongodb:mongodb /var/lib/mongodb
-   ```
-2. Restart container
-
-### Check Services
-
-Ensure that all UniFi OS Server services are up and running:
-
-```yaml
-service unifi status
-service nginx status
-service mongodb status
-service rabbitmq-server status
-```
-
-### Set System IP
-
-
-1. Exec into container
-2. Update `/var/lib/unifi/system.properties`
-
-   ```yaml
-   system_ip=xxx.xxx.xxx.xxx
-   ```
-3. Restart `unifi` service:
-
-   ```bash
-   service unifi restart
-   ```
 
 # Parameters
 
 ## Environment Variables
 
-| Env | Function |
+| Environment | Description |
 |----|----|
-| UOS_UUID | UUID for your Unifi OS Server instance |
-| UOS_SERVER_VERSION | Unifi Server OS version (bundled with image) |
-| FIRMWARE_PLATFORM | Host firmware platform |
+| UOS_SYSTEM_IP | Hostname or IP for Unifi OS Server |
 
-### UOS_UUID
+### UOS_SYSTEM_IP
 
-Works with any v5 UUID, is probably only used to differentiate installations when connecting via <https://unifi.ui.com/> or the app.
+Set Unifi OS Server hostname (recommended) or IP address for inform. To adopt device:
+
+
+1. SSH into device with username/password: `ubnt`/`ubnt`
+2. Set inform address:
+
+   ```bash
+   set-inform https://$UOS_SYSTEM_IP:8080/inform
+   ```
 
 ## Ports
 
 | Protocol | Port | Direction | Usage |
 |----|----|----|----|
 | TCP | 11443 | Ingress | Unifi OS Server GUI/API |
-| TCP | 5005 | ? | RTP (Real-time Transport Protocol) control protocol |
-| TCP | 9543 | ? | UniFi Identity Hub |
+| TCP | 5005 | Ingress | RTP (Real-time Transport Protocol) control protocol |
+| TCP | 9543 | Ingress | UniFi Identity Hub |
 | TCP | 6789 | Ingress | UniFi mobile speed test |
 | TCP | 8080 | Ingress | Device and application communication |
 | TCP | 8443 | Ingress | UniFi Network Application GUI/API |
@@ -156,13 +79,17 @@ Works with any v5 UUID, is probably only used to differentiate installations whe
 | UDP | 5514 | Ingress | Remote syslog capture |
 | UDP | 10003 | Ingress | Device discovery during adoption |
 | TCP | 11084 | Ingress | UniFi Site Supervisor |
-| TCP | 5671 | ? | AQMPS |
+| TCP | 5671 | Ingress | AQMPS |
 | TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |
 | TCP | 8881 | Ingress | Hotspot portal redirection (HTTP) |
 | TCP | 8882 | Ingress | Hotspot portal redirection (HTTP) |
 
-# Known Issues
+# Frequently Asked Questions
 
-* Container runs in `privileged` mode, which gives full access to host kernel, devices, etc. This can probably be tightened up once more integrations are added and there is a better understanding of permission requirements
-* Updating UniFi integrations through the UniFi OS Server web interface might not work properly and break UniFi Network or other services.
-* Incorrect directory permissions on initial install for NGINX and MongoDB services
+## What is the difference between images?
+
+The `uosserver` image is provided by Unifi, extracted from the installation binary. The `unifi-os-server` image provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment variables.
+
+## Why does the container need privileged access?
+
+The underlying structure of Unifi OS Server runs every component as systemd services which requires access to the host `cgroup`.
