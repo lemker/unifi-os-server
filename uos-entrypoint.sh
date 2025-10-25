@@ -7,6 +7,7 @@ if [ ! -f /data/uos_uuid ]; then
         echo "$UOS_UUID" > /data/uos_uuid
     else
         echo "No UUID present, creating..."
+        apt-get install -y uuid-runtime
         UUID_NAME=$(uuidgen)
         UUID_NAMESPACE=$(uuidgen)
         UOS_UUID=$(uuidgen --name $UUID_NAME --namespace $UUID_NAMESPACE --sha1)
