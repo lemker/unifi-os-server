@@ -61,7 +61,7 @@ Set Unifi OS Server hostname (recommended) or IP address for inform. To adopt de
 2. Set inform address:
 
    ```bash
-   set-inform https://$UOS_SYSTEM_IP:8080/inform
+   set-inform http://$UOS_SYSTEM_IP:8080/inform
    ```
 
 ## Ports
