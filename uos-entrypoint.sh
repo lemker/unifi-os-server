@@ -56,5 +56,10 @@ if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
     chmod 755 "$RABBITMQ_LOG_DIR"
 fi
 
+# Set UOS_SYSTEM_IP
+if [ -n "${UOS_SYSTEM_IP+1}" ]; then
+    sed -i 's/.*system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' /var/lib/unifi/system.properties
+fi
+
 # Start systemd
 exec /sbin/init
