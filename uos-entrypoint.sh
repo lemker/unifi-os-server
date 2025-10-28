@@ -58,7 +58,11 @@ fi
 
 # Set UOS_SYSTEM_IP
 if [ -n "${UOS_SYSTEM_IP+1}" ]; then
-    sed -i 's/.*system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' /var/lib/unifi/system.properties
+    if [ ! -f /var/lib/unifi/system.properties ]; then
+        echo "system_ip=$UOS_SYSTEM_IP" >> /var/lib/unifi/system.properties
+    else
+        sed -i 's/.*system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' /var/lib/unifi/system.properties
+    fi
 fi
 
 # Start systemd
