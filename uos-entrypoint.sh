@@ -57,8 +57,17 @@ if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
 fi
 
 # Set UOS_SYSTEM_IP
+UNIFI_SYSTEM_PROPERTIES="/var/lib/unifi/system.properties"
 if [ -n "${UOS_SYSTEM_IP+1}" ]; then
-    sed -i 's/.*system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' /var/lib/unifi/system.properties
+    if [ ! -f "$UNIFI_SYSTEM_PROPERTIES" ]; then
+        echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
+    else
+        if [ ! -z $(grep "^system_ip=.*" "$UNIFI_SYSTEM_PROPERTIES") ]; then
+            sed -i 's/^system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' "$UNIFI_SYSTEM_PROPERTIES"
+        else
+            echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
+        fi
+    fi
 fi
 
 # Start systemd
