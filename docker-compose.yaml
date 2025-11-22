@@ -5,7 +5,7 @@ services:
     container_name: unifi-os-server
     privileged: true
     environment:
-      - UOS_SYSTEM_IP="unifi.example.com"
+      - UOS_SYSTEM_IP=unifi.example.com
     volumes:
       - /path/to/unifi-os-server/persistent:/persistent
       - /path/to/unifi-os-server/var-log:/var/log
