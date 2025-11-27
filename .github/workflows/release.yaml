@@ -38,8 +38,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}-ea,enable=${{ github.event.release.prerelease == 'true' }}
-            type=semver,pattern={{version}},enable=${{ github.event.release.prerelease == 'false' }}
+            type=raw,value=${{ github.ref_name }}
+            type=raw,value=ea,enable=${{ github.event.release.prerelease == 'true' }}
             type=raw,value=latest,enable=${{ github.event.release.prerelease == 'false' }}
       
       - name: Build and push image
