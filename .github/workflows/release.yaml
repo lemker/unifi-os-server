@@ -39,8 +39,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ github.ref_name }}
-            type=raw,value=ea,enable=${{ github.event.release.prerelease == 'true' }}
-            type=raw,value=latest,enable=${{ github.event.release.prerelease == 'false' }}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-ea') }}
+            type=raw,value=ea,enable=${{ contains(github.ref_name, '-ea') }}
       
       - name: Build and push image
         id: push
