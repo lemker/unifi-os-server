@@ -8,16 +8,11 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 # Installation
 
-## Methods
-
-* [Docker Compose](https://github.com/lemker/unifi-os-server/tree/main?tab=readme-ov-file#docker-compose)
-* [Kubernetes](https://github.com/lemker/unifi-os-server/tree/main?tab=readme-ov-file#kubernetes)
-
-### Docker Compose
+## Docker Compose
 
 See [docker-compose.yaml](https://github.com/lemker/unifi-os-server/blob/main/docker-compose.yaml)
 
-### Kubernetes
+## Kubernetes
 
 See [kubernetes](https://github.com/lemker/unifi-os-server/tree/main/kubernetes)
 
@@ -25,7 +20,7 @@ Deployment example uses [ingress-nginx](https://github.com/kubernetes/ingress-ng
 
 Your ingress controller must be modified to accept extra ports. For example, `ingress-nginx` Helm values:
 
-```bash
+```yaml
 tcp:
   5005: "unifi/unifi-os-server-rtp-svc:5005" # Optional
   9543: "unifi/unifi-os-server-id-hub-svc:9543" # Optional
@@ -50,11 +45,11 @@ udp:
 
 | Environment | Description |
 |----|----|
-| UOS_SYSTEM_IP | Hostname or IP for Unifi OS Server |
+| UOS_SYSTEM_IP | Hostname or IP for UniFi OS Server |
 
 ### UOS_SYSTEM_IP
 
-Set Unifi OS Server hostname (recommended) or IP address for inform. To adopt device:
+Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt device:
 
 
 1. SSH into device with username/password: `ubnt`/`ubnt`
@@ -68,7 +63,7 @@ Set Unifi OS Server hostname (recommended) or IP address for inform. To adopt de
 
 | Protocol | Port | Direction | Usage |
 |----|----|----|----|
-| TCP | 11443 | Ingress | Unifi OS Server GUI/API |
+| TCP | 11443 | Ingress | UniFi OS Server GUI/API |
 | TCP | 5005 | Ingress | RTP (Real-time Transport Protocol) control protocol |
 | TCP | 9543 | Ingress | UniFi Identity Hub |
 | TCP | 6789 | Ingress | UniFi mobile speed test |
@@ -88,8 +83,8 @@ Set Unifi OS Server hostname (recommended) or IP address for inform. To adopt de
 
 ## What is the difference between images?
 
-The `uosserver` image is provided by Unifi, extracted from the installation binary. The `unifi-os-server` image provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment variables.
+The `uosserver` image is provided by UniFi, extracted from the installation binary. The `unifi-os-server` image provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment variables.
 
 ## Why does the container need privileged access?
 
-The underlying structure of Unifi OS Server runs every component as systemd services which requires access to the host `cgroup`.
+The underlying structure of UniFi OS Server runs every component as systemd services which requires access to the host `cgroup`.
