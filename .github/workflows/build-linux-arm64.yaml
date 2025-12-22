@@ -6,19 +6,12 @@ on:
       version:
         required: true
         type: string
-      latest:
-        required: true
-        type: boolean
   workflow_dispatch:
     inputs:
       version:
         description: "UniFi OS Server version"
         required: true
         type: string
-      latest:
-        description: "Set latest tag"
-        required: true
-        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -45,8 +38,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ inputs.version }}
-            type=raw,value=latest,enable=${{ inputs.latest == true }}
+            type=raw,value=${{ inputs.version }}-linux-arm64
       
       - name: Build and push image
         id: push

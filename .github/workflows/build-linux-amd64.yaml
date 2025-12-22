@@ -46,6 +46,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ inputs.version }}
+            type=raw,value=${{ inputs.version }}-linux-amd64
             type=raw,value=latest,enable=${{ inputs.latest == true }}
       
       - name: Build and push image
