@@ -104,8 +104,8 @@ jobs:
         run: |
           sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG/" Dockerfile
           sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile
-          #sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG/" Dockerfile.arm64
-          #sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile.arm64
+          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG/" Dockerfile.arm64
+          sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile.arm64
       
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
