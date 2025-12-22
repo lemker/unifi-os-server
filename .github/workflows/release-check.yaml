@@ -1,0 +1,160 @@
+name: Check for new releases
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #  - cron: "0 0 * * *"
+
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      UOS_VERSION: ${{ steps.version.outputs.UOS_VERSION }}
+      UOS_DOWNLOAD_AMD64: ${{ steps.version.outputs.UOS_DOWNLOAD_AMD64 }}
+      UOS_DOWNLOAD_ARM64: ${{ steps.version.outputs.UOS_DOWNLOAD_ARM64 }}
+      RELEASED: ${{ steps.release.outputs.released }}
+  
+    steps:
+      - name: Get latest version
+        run: |
+          curl -sX GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~product~~unifi-os-server&filter=eq~~platform~~linux-x64&filter=eq~~channel~~release" > linux-amd64.json
+          curl -sX GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~product~~unifi-os-server&filter=eq~~platform~~linux-arm64&filter=eq~~channel~~release" > linux-arm64.json
+          jq empty linux-amd64.json
+          jq empty linux-arm64.json
+      
+      - name: Extract version and download url for amd64
+        id: version
+        run: |
+          # Check that there are firmware entries
+          if [ "$(jq '._embedded.firmware | length' linux-amd64.json)" -eq 0 ]; then
+            echo "No firmware entries found" >&2
+            exit 1
+          fi
+          
+          UOS_VERSION=$(jq -r '._embedded.firmware[0].version // empty' linux-amd64.json | sed 's/^v//')
+          UOS_DOWNLOAD_AMD64=$(jq -r '._embedded.firmware[0]._links.data.href // empty' linux-amd64.json)
+          UOS_DOWNLOAD_ARM64=$(jq -r '._embedded.firmware[0]._links.data.href // empty' linux-arm64.json)
+
+          if [ -z "$UOS_VERSION" ] || [ -z "$UOS_DOWNLOAD_AMD64" ] || [ -z "$UOS_DOWNLOAD_ARM64" ]; then
+            echo "Missing version or download URL in JSON" >&2
+            exit 1
+          fi
+          
+          # Export to env
+          echo "UOS_VERSION=$UOS_VERSION" >> "$GITHUB_ENV"
+          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64" >> "$GITHUB_ENV"
+          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64" >> "$GITHUB_ENV"
+
+          # Export to outputs
+          echo "UOS_VERSION=$UOS_VERSION" >> $GITHUB_OUTPUT
+          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64" >> $GITHUB_OUTPUT
+          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64" >> $GITHUB_OUTPUT
+
+          # Print variables
+          echo "UOS_VERSION=$UOS_VERSION"
+          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64"
+          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5.0.1
+
+      - name: Check if release already exists
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |          
+          if gh release view ${{ env.UOS_VERSION }}; then
+            echo "Release for ${{ env.UOS_VERSION }} already exists, exiting!"
+            echo "released=true" >> $GITHUB_OUTPUT            
+          else
+            echo "Release for ${{ env.UOS_VERSION }} does not exist!"
+            echo "released=false" >> $GITHUB_OUTPUT
+          fi
+        
+  extract-linux-amd64:
+    needs: release-check
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    uses: ./.github/workflows/extract-linux-amd64.yaml
+    with:
+      UOS_DOWNLOAD: ${{ needs.release-check.outputs.UOS_DOWNLOAD_AMD64 }}
+
+  extract-linux-arm64:
+    needs: release-check
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    uses: ./.github/workflows/extract-linux-arm64.yaml
+    with:
+      UOS_DOWNLOAD: ${{ needs.release-check.outputs.UOS_DOWNLOAD_ARM64 }}
+
+  merge-changes:
+    runs-on: ubuntu-latest
+    needs: [release-check, extract-linux-amd64]
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    timeout-minutes: 10
+
+    env:
+      UOS_VERSION: ${{ needs.release-check.outputs.UOS_VERSION }}
+      PODMAN_IMAGE_TAG: ${{ needs.extract-linux-amd64.outputs.PODMAN_IMAGE_TAG }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5.0.1 # https://github.com/peter-evans/create-pull-request/issues/4272
+
+      - name: Update Dockerfile
+        run: |
+          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG/" Dockerfile
+          sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile
+          #sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG/" Dockerfile.arm64
+          #sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile.arm64
+      
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update to UniFi OS Server ${{ env.UOS_VERSION }}"
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          branch: updates/${{ env.UOS_VERSION }}
+          base: main
+          title: "Update to UniFi OS Server ${{ env.UOS_VERSION }}"
+          body: |
+            Bump uosserver image to `${{ env.PODMAN_IMAGE_TAG }}`
+            Bump UniFi OS Server to `${{ env.UOS_VERSION }}`
+
+      - name: Merge pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge updates/${{ env.UOS_VERSION }} --merge --delete-branch
+
+  build-linux-amd64:
+    needs: [release-check, merge-changes]
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    uses: ./.github/workflows/build-linux-amd64.yaml
+    with:
+      version: ${{ needs.release-check.outputs.UOS_VERSION }}
+      latest: true
+  
+  build-linux-arm64:
+    needs: [release-check, merge-changes]
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    uses: ./.github/workflows/build-linux-arm64.yaml
+    with:
+      version: ${{ needs.release-check.outputs.UOS_VERSION }}
+      latest: true
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [release-check, build-linux-amd64, build-linux-arm64]
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ needs.release-check.outputs.UOS_VERSION }} --title ${{ needs.release-check.outputs.UOS_VERSION }} --generate-notes
