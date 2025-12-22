@@ -69,6 +69,6 @@ jobs:
         run: |
           PODMAN_IMAGE_TAG=$(podman images uosserver --noheading | awk '{print $2}')
           PODMAN_IMAGE_ID=$(podman images uosserver --noheading | awk '{print $3}')
-          podman push $PODMAN_IMAGE_ID $REGISTRY/$REPO_OWNER/uosserver:$PODMAN_IMAGE_TAG
+          podman push $PODMAN_IMAGE_ID $REGISTRY/$REPO_OWNER/uosserver:$PODMAN_IMAGE_TAG-arm64
 
           echo "PODMAN_IMAGE_TAG=$PODMAN_IMAGE_TAG" >> "$GITHUB_OUTPUT"
