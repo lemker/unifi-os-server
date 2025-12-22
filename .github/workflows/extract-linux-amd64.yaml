@@ -1,0 +1,74 @@
+name: Extract image for linux-amd64
+
+on:
+  workflow_call:
+    inputs:
+      UOS_DOWNLOAD:
+        required: true
+        type: string
+    outputs:
+      PODMAN_IMAGE_TAG:
+        description: "Tag for uosserver"
+        value: ${{ jobs.extract-image.outputs.PODMAN_IMAGE_TAG }}
+  workflow_dispatch:
+    inputs:
+      UOS_DOWNLOAD:
+        description: "UniFi OS Server download URL"
+        required: true
+        type: string
+
+env:
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+  REGISTRY: ghcr.io
+  REPO_OWNER: ${{ github.repository_owner }}
+
+jobs:
+  extract-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      PODMAN_IMAGE_TAG: ${{ steps.tag.outputs.PODMAN_IMAGE_TAG }}
+  
+    steps:     
+      - name: Cleanup disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+
+      - name: Install UniFi OS Server
+        run: |          
+          mkdir -p /home/runner/.config/containers
+          chmod 755 /home/runner /home/runner/.config /home/runner/.config/containers
+          touch /home/runner/.config/containers/storage.conf
+          chmod 755 /home/runner/.config/containers/storage.conf
+          curl -o unifi-os-server "${{ inputs.UOS_DOWNLOAD }}"
+          sudo chmod +x unifi-os-server
+          echo "y" | sudo ./unifi-os-server
+        continue-on-error: true
+      
+      - name: Get uosserver image for runner
+        run: |
+          mkdir -p /home/runner/.local/share/containers/storage/overlay
+          sudo cp -a /home/uosserver/.local/share/containers/storage/overlay/. /home/runner/.local/share/containers/storage/overlay/
+          mkdir -p /home/runner/.local/share/containers/storage/overlay-images
+          sudo cp -a /home/uosserver/.local/share/containers/storage/overlay-images/. /home/runner/.local/share/containers/storage/overlay-images/
+          mkdir -p /home/runner/.local/share/containers/storage/overlay-layers
+          sudo cp -a /home/uosserver/.local/share/containers/storage/overlay-layers/. /home/runner/.local/share/containers/storage/overlay-layers/
+          sudo chown -R runner:runner /home/runner/.local/share/containers/storage
+          podman images
+
+      - name: Login to GHCR
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          registry: ${{ env.REGISTRY }}
+      
+      - name: Upload uosserver image
+        id: tag
+        run: |
+          PODMAN_IMAGE_TAG=$(podman images uosserver --noheading | awk '{print $2}')
+          PODMAN_IMAGE_ID=$(podman images uosserver --noheading | awk '{print $3}')
+          podman push $PODMAN_IMAGE_ID $REGISTRY/$REPO_OWNER/uosserver-test:$PODMAN_IMAGE_TAG
+
+          echo "PODMAN_IMAGE_TAG=$PODMAN_IMAGE_TAG" >> "$GITHUB_OUTPUT"

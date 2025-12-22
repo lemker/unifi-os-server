@@ -1,25 +1,32 @@
-name: Create and publish image on release
+name: Build and push linux-arm64
 
 on:
-  release:
-    types: [published]
-    paths-ignore:
-      - 'kubernetes/**'
-      - 'docker-compose.yaml'
-      - '**.md'
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      latest:
+        required: true
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "UniFi OS Server version"
+        required: true
+        type: string
+      latest:
+        description: "Set latest tag"
+        required: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
+  build:
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout repository
@@ -38,15 +45,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ github.ref_name }}
-            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-ea') }}
-            type=raw,value=ea,enable=${{ contains(github.ref_name, '-ea') }}
+            type=raw,value=${{ inputs.version }}
+            type=raw,value=latest,enable=${{ inputs.latest == true }}
       
       - name: Build and push image
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./Dockerfile.arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
