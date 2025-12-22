@@ -141,7 +141,6 @@ jobs:
     uses: ./.github/workflows/build-linux-arm64.yaml
     with:
       version: ${{ needs.release-check.outputs.UOS_VERSION }}
-      latest: true
 
   create-release:
     runs-on: ubuntu-latest
