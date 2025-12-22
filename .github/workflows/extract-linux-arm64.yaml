@@ -1,20 +1,23 @@
 name: Extract image for linux-arm64
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      UOS_VERSION:
-        description: "UniFi OS Server version"
+      UOS_DOWNLOAD:
         required: true
         type: string
+    outputs:
+      PODMAN_IMAGE_TAG:
+        description: "Tag for uosserver"
+        value: ${{ jobs.extract-image.outputs.PODMAN_IMAGE_TAG }}
+  workflow_dispatch:
+    inputs:
       UOS_DOWNLOAD:
         description: "UniFi OS Server download URL"
         required: true
-        type: string  
+        type: string
 
 env:
-  UOS_VERSION: ${{ inputs.UOS_VERSION }}
-  UOS_DOWNLOAD: ${{ inputs.UOS_DOWNLOAD }}
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
   REGISTRY: ghcr.io
@@ -24,6 +27,8 @@ jobs:
   extract-image:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
+    outputs:
+      PODMAN_IMAGE_TAG: ${{ steps.tag.outputs.PODMAN_IMAGE_TAG }}
   
     steps:     
       - name: Cleanup disk
@@ -36,7 +41,7 @@ jobs:
           chmod 755 /home/runner /home/runner/.config /home/runner/.config/containers
           touch /home/runner/.config/containers/storage.conf
           chmod 755 /home/runner/.config/containers/storage.conf
-          curl -o unifi-os-server "${{ env.UOS_DOWNLOAD }}"
+          curl -o unifi-os-server "${{ inputs.UOS_DOWNLOAD }}"
           sudo chmod +x unifi-os-server
           echo "y" | sudo ./unifi-os-server
         continue-on-error: true
@@ -60,7 +65,10 @@ jobs:
           registry: ${{ env.REGISTRY }}
       
       - name: Upload uosserver image
+        id: tag
         run: |
           PODMAN_IMAGE_TAG=$(podman images uosserver --noheading | awk '{print $2}')
           PODMAN_IMAGE_ID=$(podman images uosserver --noheading | awk '{print $3}')
           podman push $PODMAN_IMAGE_ID $REGISTRY/$REPO_OWNER/uosserver-test:$PODMAN_IMAGE_TAG
+
+          echo "PODMAN_IMAGE_TAG=$PODMAN_IMAGE_TAG" >> "$GITHUB_OUTPUT"
