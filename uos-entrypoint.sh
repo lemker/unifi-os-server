@@ -56,6 +56,35 @@ if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
     chmod 755 "$RABBITMQ_LOG_DIR"
 fi
 
+# Apply Synology patches
+SYS_VENDOR="/sys/class/dmi/id/sys_vendor"
+if [ -f "$SYS_VENDOR" ] && grep -q "Synology Inc." "$SYS_VENDOR"; then
+    echo "Synology hardware found, applying patches..."
+
+    # Set Postgres overrides
+    mkdir -p /etc/systemd/system/postgresql@14-main.service.d
+    {
+        echo "[Service]"
+        echo "PIDFile="
+    } > /etc/systemd/system/postgresql@14-main.service.d/override.conf
+
+    # Set RabbitMQ overrides
+    mkdir -p /etc/systemd/system/rabbitmq-server.service.d
+    {
+        echo "[Service]"
+        echo "Type=simple"
+    } > /etc/systemd/system/rabbitmq-server.service.d/override.conf
+
+    # Set ulp-go overrides
+    mkdir -p /etc/systemd/system/ulp-go.service.d
+    {
+        echo "[Service]"
+        echo "Type=simple"
+    } > /etc/systemd/system/ulp-go.service.d/override.conf
+
+    echo "Synology patches applied!"
+fi
+
 # Set UOS_SYSTEM_IP
 UNIFI_SYSTEM_PROPERTIES="/var/lib/unifi/system.properties"
 if [ -n "${UOS_SYSTEM_IP+1}" ]; then
