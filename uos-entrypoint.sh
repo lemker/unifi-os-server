@@ -3,15 +3,15 @@
 # Persist UOS_UUID env var
 if [ ! -f /data/uos_uuid ]; then
     if [ -n "${UOS_UUID+1}" ]; then
-        echo "Setting UUID to $UOS_UUID"
+        echo "Setting UOS_UUID to $UOS_UUID"
         echo "$UOS_UUID" > /data/uos_uuid
     else
-        echo "No UUID present, generating..."
+        echo "No UOS_UUID present, generating..."
         UUID=$(cat /proc/sys/kernel/random/uuid)
 
         # Spoof a v5 UUID
         UOS_UUID=$(echo $UUID | sed s/./5/15)
-        echo "Setting UUID to $UOS_UUID"
+        echo "Setting UOS_UUID to $UOS_UUID"
         echo "$UOS_UUID" > /data/uos_uuid
     fi
 fi
@@ -58,17 +58,17 @@ fi
 
 # Apply Synology patches
 SYS_VENDOR="/sys/class/dmi/id/sys_vendor"
-if [ -f "$SYS_VENDOR" ] && grep -q "Synology Inc." "$SYS_VENDOR"; then
+if [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; then
     echo "Synology hardware found, applying patches..."
 
-    # Set Postgres overrides
+    # Set postgresql overrides
     mkdir -p /etc/systemd/system/postgresql@14-main.service.d
     {
         echo "[Service]"
         echo "PIDFile="
     } > /etc/systemd/system/postgresql@14-main.service.d/override.conf
 
-    # Set RabbitMQ overrides
+    # Set rabbitmq overrides
     mkdir -p /etc/systemd/system/rabbitmq-server.service.d
     {
         echo "[Service]"
@@ -88,10 +88,11 @@ fi
 # Set UOS_SYSTEM_IP
 UNIFI_SYSTEM_PROPERTIES="/var/lib/unifi/system.properties"
 if [ -n "${UOS_SYSTEM_IP+1}" ]; then
+    echo "Setting UOS_SYSTEM_IP to $UOS_SYSTEM_IP"
     if [ ! -f "$UNIFI_SYSTEM_PROPERTIES" ]; then
         echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
     else
-        if [ ! -z $(grep "^system_ip=.*" "$UNIFI_SYSTEM_PROPERTIES") ]; then
+        if grep -q "^system_ip=.*" "$UNIFI_SYSTEM_PROPERTIES"; then
             sed -i 's/^system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' "$UNIFI_SYSTEM_PROPERTIES"
         else
             echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
