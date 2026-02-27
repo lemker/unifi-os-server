@@ -49,11 +49,11 @@ udp:
 | Environment | Description |
 |----|----|
 | UOS_SYSTEM_IP | Hostname or IP for UniFi OS Server |
+| HARDWARE_PLATFORM | Manually set hardware platform |
 
 ### UOS_SYSTEM_IP
 
 Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt device:
-
 
 1. SSH into device with username/password: `ubnt`/`ubnt`
 2. Set inform address:
@@ -61,6 +61,10 @@ Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt de
    ```bash
    set-inform http://$UOS_SYSTEM_IP:8080/inform
    ```
+
+### HARDWARE_PLATFORM
+
+Overrides your detected hardware platform. Accepted values are: `synology`.
 
 ## Ports
 
