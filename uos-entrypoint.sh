@@ -58,7 +58,8 @@ fi
 
 # Apply Synology patches
 SYS_VENDOR="/sys/class/dmi/id/sys_vendor"
-if [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; then
+if { [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; } \
+    || [ "${HARDWARE_PLATFORM:-}" = "synology" ]; then
     echo "Synology hardware found, applying patches..."
 
     # Set postgresql overrides
