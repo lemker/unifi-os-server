@@ -60,7 +60,12 @@ fi
 SYS_VENDOR="/sys/class/dmi/id/sys_vendor"
 if { [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; } \
     || [ "${HARDWARE_PLATFORM:-}" = "synology" ]; then
-    echo "Synology hardware found, applying patches..."
+
+    if [ -n "${HARDWARE_PLATFORM+1}" ]; then
+        echo "Setting HARDWARE_PLATFORM to $HARDWARE_PLATFORM"
+    else
+        echo "Synology hardware found, applying patches..."
+    fi
 
     # Set postgresql overrides
     mkdir -p /etc/systemd/system/postgresql@14-main.service.d
