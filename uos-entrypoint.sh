@@ -19,6 +19,17 @@ fi
 # Read version from package.json and write version string
 echo "Setting UOS_SERVER_VERSION to $UOS_SERVER_VERSION"
 echo "UOSSERVER.0000000.$UOS_SERVER_VERSION.0000000.000000.0000" > /usr/lib/version
+
+ARCH="$(dpkg --print-architecture)"
+if [ "$ARCH" == "amd64" ]; then
+    FIRMWARE_PLATFORM=linux-x64
+elif [ "$ARCH" == "arm64" ]; then
+    FIRMWARE_PLATFORM=arm64
+else
+    echo "FIRMWARE_PLATFORM not found for $ARCH"
+    exit 1
+fi
+
 echo "Setting FIRMWARE_PLATFORM to $FIRMWARE_PLATFORM"
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 
