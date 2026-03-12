@@ -22,7 +22,7 @@ jobs:
   build-multiarch:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:       
+    steps:
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -35,6 +35,6 @@ jobs:
         with:
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-multiarch
-          sources: |            
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-amd64
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-arm64
+          sources: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-amd64
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-arm64
