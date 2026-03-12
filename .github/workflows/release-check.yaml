@@ -88,7 +88,7 @@ jobs:
 
   merge-changes:
     runs-on: ubuntu-latest
-    needs: [release-check, extract-linux-amd64]
+    needs: [release-check, extract-linux-amd64, extract-linux-arm64]
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
     timeout-minutes: 10
 
@@ -102,10 +102,8 @@ jobs:
 
       - name: Update Dockerfile
         run: |
-          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG-linux-amd64/" Dockerfile
+          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG-multiarch/" Dockerfile
           sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile
-          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG-linux-arm64/" Dockerfile.arm64
-          sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile.arm64
       
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
@@ -127,24 +125,17 @@ jobs:
         run: |
           gh pr merge updates/${{ env.UOS_VERSION }} --merge --delete-branch
 
-  build-linux-amd64:
+  build-image:
     needs: [release-check, merge-changes]
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/build-linux-amd64.yaml
+    uses: ./.github/workflows/build-image.yaml
     with:
       version: ${{ needs.release-check.outputs.UOS_VERSION }}
       latest: true
   
-  build-linux-arm64:
-    needs: [release-check, merge-changes]
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/build-linux-arm64.yaml
-    with:
-      version: ${{ needs.release-check.outputs.UOS_VERSION }}
-
   create-release:
     runs-on: ubuntu-latest
-    needs: [release-check, build-linux-amd64, build-linux-arm64]
+    needs: [release-check, build-image]
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
     timeout-minutes: 10
 

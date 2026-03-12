@@ -16,12 +16,7 @@ env:
 jobs:
   build-and-push-image-dev:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
