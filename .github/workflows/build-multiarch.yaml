@@ -1,0 +1,40 @@
+name: Build multiarch image for uosserver
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag for uosserver"
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  REPO_OWNER: ${{ github.repository_owner }}
+  IMAGE_NAME: uosserver
+
+jobs:
+  build-multiarch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:       
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge and push manifest
+        uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-multiarch
+          sources: |            
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-amd64
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-linux-arm64
