@@ -6,12 +6,11 @@ on:
   push:
     branches-ignore:
       - main
-    tags:
-      - 'v*'
     paths-ignore:
       - 'kubernetes/**'
-      - 'docker-compose.yaml'
       - '**.md'
+      - 'docker-compose.yaml'
+      - 'renovate.json'
 
 env:
   REGISTRY: ghcr.io
