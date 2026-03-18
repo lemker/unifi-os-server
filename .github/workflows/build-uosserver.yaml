@@ -1,4 +1,4 @@
-name: Build multiarch image for uosserver
+name: Build and push uosserver image
 
 on:
   workflow_call:
