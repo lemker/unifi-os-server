@@ -1,0 +1,24 @@
+name: Delete image tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to delete"
+        required: true
+        type: string
+
+jobs:
+  remove-docker-tag:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Remove Docker Tag
+      uses: rafalkk/remove-dockertag-action@v1
+      with:
+        tag_name: ${{ inputs.tag }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
