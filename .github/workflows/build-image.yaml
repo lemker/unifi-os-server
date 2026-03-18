@@ -1,24 +1,17 @@
 name: Build and push unifi-os-server image
 
 on:
-  workflow_call:
-    inputs:
-      version:
-        required: true
-        type: string
-      latest:
-        required: true
-        type: boolean
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "UniFi OS Server version"
-        required: true
-        type: string
-      latest:
-        description: "Set latest tag"
-        required: true
-        type: boolean
+  release:
+    types: [published]
+  push:
+    branches-ignore:
+      - main
+    tags:
+      - 'v*'
+    paths-ignore:
+      - 'kubernetes/**'
+      - 'docker-compose.yaml'
+      - '**.md'
 
 env:
   REGISTRY: ghcr.io
@@ -51,8 +44,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ inputs.version }}
-            type=raw,value=latest,enable=${{ inputs.latest == true }}
+            type=semver,pattern={{version}},prefix=v
+            type=semver,pattern={{major}}.{{minor}},prefix=v
+            type=semver,pattern={{major}},prefix=v
+            type=ref,event=branch
+          flavor: |
+            latest=auto
       
       - name: Build and push image
         id: push

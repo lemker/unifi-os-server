@@ -57,18 +57,16 @@ jobs:
           echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64"
 
       - name: Checkout repository
-        uses: actions/checkout@v5.0.1
+        uses: actions/checkout@v6
 
       - name: Check if release already exists
         id: release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |          
-          if gh release view ${{ env.UOS_VERSION }}; then
-            echo "Release for ${{ env.UOS_VERSION }} already exists, exiting!"
-            echo "released=true" >> $GITHUB_OUTPUT            
+          if grep -q "UOS_SERVER_VERSION=\"${{ env.UOS_VERSION }}\"" Dockerfile; then
+            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} already exists, exiting!"
+            echo "released=true" >> $GITHUB_OUTPUT
           else
-            echo "Release for ${{ env.UOS_VERSION }} does not exist!"
+            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} does not exist!"
             echo "released=false" >> $GITHUB_OUTPUT
           fi
         
@@ -86,9 +84,16 @@ jobs:
     with:
       UOS_DOWNLOAD: ${{ needs.release-check.outputs.UOS_DOWNLOAD_ARM64 }}
 
-  merge-changes:
-    runs-on: ubuntu-latest
+  build-uosserver:
     needs: [release-check, extract-linux-amd64, extract-linux-arm64]
+    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
+    uses: ./.github/workflows/build-uosserver.yaml
+    with:
+      tag: ${{ needs.release-check.outputs.UOS_VERSION }}
+
+  create-pr:
+    runs-on: ubuntu-latest
+    needs: [release-check, extract-linux-amd64, extract-linux-arm64, build-uosserver]
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
     timeout-minutes: 10
 
@@ -98,7 +103,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5.0.1 # https://github.com/peter-evans/create-pull-request/issues/4272
+        uses: actions/checkout@v6
 
       - name: Update Dockerfile
         run: |
@@ -109,42 +114,12 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update to UniFi OS Server ${{ env.UOS_VERSION }}"
+          commit-message: "Update UniFi OS Server to ${{ env.UOS_VERSION }}"
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          branch: updates/${{ env.UOS_VERSION }}
+          branch: updates-unifi-core-${{ env.UOS_VERSION }}
           base: main
-          title: "Update to UniFi OS Server ${{ env.UOS_VERSION }}"
+          title: "Update UniFi OS Server to ${{ env.UOS_VERSION }}"
           body: |
             Bump uosserver image to `${{ env.PODMAN_IMAGE_TAG }}`
             Bump UniFi OS Server to `${{ env.UOS_VERSION }}`
-
-      - name: Merge pull request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge updates/${{ env.UOS_VERSION }} --merge --delete-branch
-
-  build-image:
-    needs: [release-check, merge-changes]
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/build-image.yaml
-    with:
-      version: ${{ needs.release-check.outputs.UOS_VERSION }}
-      latest: true
-  
-  create-release:
-    runs-on: ubuntu-latest
-    needs: [release-check, build-image]
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create ${{ needs.release-check.outputs.UOS_VERSION }} --title ${{ needs.release-check.outputs.UOS_VERSION }} --generate-notes
