@@ -117,5 +117,8 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
     fi
 fi
 
+# Disable ubnt-dpkg-restore
+systemctl disable ubnt-dpkg-restore
+
 # Start systemd
 exec /sbin/init
