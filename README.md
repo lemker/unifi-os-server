@@ -92,6 +92,6 @@ Overrides your detected hardware platform. Accepted values are: `synology`.
 
 The `uosserver` image is provided by UniFi, extracted from the installation binary. The `unifi-os-server` image provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment variables.
 
-## Why does the container need privileged access?
+## Why does the container need specific settings for cgroup and tmpfs?
 
 The underlying structure of UniFi OS Server runs every component as systemd services which requires access to the host `cgroup`.
