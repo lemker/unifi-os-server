@@ -9,6 +9,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 STOPSIGNAL SIGRTMIN+3
 
 RUN \
+  if [ "${TARGETARCH}" = "arm64" ]; then \
     mkdir -p /tmp/dpkg-hooks; \
     mv /etc/dpkg/dpkg.cfg.d/*ubnt* /tmp/dpkg-hooks/ && \
     apt-get update && \
@@ -31,7 +32,8 @@ RUN \
     rm -rf \
         /tmp/* \
         /var/lib/apt/lists/* \
-        /var/tmp/*    
+        /var/tmp/*
+  fi
 
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 
