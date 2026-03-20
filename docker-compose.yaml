@@ -1,4 +1,4 @@
----
+#---
 services:
   unifi-os-server:
     image: ghcr.io/lemker/unifi-os-server:latest
@@ -25,19 +25,21 @@ services:
       - /path/to/unifi-os-server/var-lib-mongodb:/var/lib/mongodb
       - /path/to/unifi-os-server/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
-      - 11443:443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
-      - 8080:8080
-      - 8443:8443 # Optional
-      - 8444:8444 # Optional
-      - 3478:3478/udp
-      - 5514:5514/udp # Optional
-      - 10003:10003/udp
-      - 11084:11084 # Optional
-      - 5671:5671 # Optional
-      - 8880:8880 # Optional
-      - 8881:8881 # Optional
-      - 8882:8882 # Optional
+      - 11443:443 # Ingress Used for UniFi OS Server GUI/API
+      - 5005:5005 # Ingress Used for RTP (Real-time Transport Protocol) control protocol
+      - 9543:9543 # Ingress Used for UniFi Identity Hub
+      - 6789:6789 # Ingress Used for UniFi mobile speed test
+      - 8080:8080 # Ingress Used for Device and application communication
+      - 8443:8443 # Ingress Used for UniFi Network Application GUI/API
+      - 8444:8444 # Ingress Used for Secure Portal for Hotspot
+      - 3478:3478/udp # Both(bidirectional) used for STUN for device adoption and communication (also required for Remote Management)
+      - 5514:5514/udp # Ingress Used for Remote syslog capture
+      - 10003:10003/udp # Ingress Used for Device discovery during adoption
+      - 10001:10001/udp # Ingress Used for Device discovery during adoption legacy per older backup restores
+      - 1900:1900/udp # Ingress used for UniFi L2 discovery (SSDP)
+      - 11084:11084 # Ingress Used for UniFi Site Supervisor
+      - 5671:5671 # Ingress Used for AQMPS
+      - 8880:8880 # Optional Ingress Used for Hotspot portal redirection (HTTP)
+      - 8881:8881 # Optional Ingress Used for Hotspot portal redirection (HTTP)
+      - 8882:8882 # Optional Ingress Used for Hotspot portal redirection (HTTP)
     restart: unless-stopped
