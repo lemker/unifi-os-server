@@ -72,8 +72,21 @@ if [ "$UNIFI_ACCESS" == true ]; then
     mkdir -p /persistent/addons
 
     curl -LC - -o /persistent/addons/unifi-face-shared-lib_v1.0.6+156.deb \
-      https://fw-download.ubnt.com/data/unifi-face-shared-lib/0187-uos-deb11-arm64-1.0.6-3fa2b2f6-023a-4fba-8d05-83eee79b0580.deb
+      https://fw-download.ubnt.com/data/unifi-face-shared-lib/0187-uos-deb11-$ARCH-1.0.6-3fa2b2f6-023a-4fba-8d05-83eee79b0580.deb
     dpkg -i /persistent/addons/unifi-face-shared-lib_v1.0.6+156.deb
+
+    curl -LC - -o /persistent/addons/unifi-user-assets_v0.4.40+529.deb \
+      https://fw-download.ubnt.com/data/unifi-user-assets/d7f0-uos-deb11-$ARCH-0.4.40-3bd60132-8ad1-407e-9e39-b54f2339bd10.deb
+    dpkg -i /persistent/addons/unifi-user-assets_v0.4.40+529.deb
+
+    curl -LC - -o /persistent/addons/ms_v5.1.44.deb \
+      https://fw-download.ubnt.com/data/ms/68b8-uos-deb11-$ARCH-5.1.202-7faf898f-7844-4267-b2c9-e448e98a5bdd.deb
+    dpkg -i /persistent/addons/ms_v5.1.44.deb
+
+    apt update && apt install -y coturn
+    curl -LC - -o /persistent/addons/unifi-access_v4.1.40+11584.deb \
+      https://fw-download.ubnt.com/data/unifi-access/f444-uos-deb11-$ARCH-4.1.40-f4a14bf9-d7a6-4165-abe4-1023afe6ec18.deb
+    dpkg -i /persistent/addons/unifi-access_v4.1.40+11584.deb
 fi
 
 # Apply Synology patches
