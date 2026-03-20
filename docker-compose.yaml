@@ -3,10 +3,20 @@ services:
   unifi-os-server:
     image: ghcr.io/lemker/unifi-os-server:latest
     container_name: unifi-os-server
-    privileged: true
+    cgroup: host
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    tmpfs:
+      - /run:exec
+      - /run/lock
+      - /tmp:exec
+      - /var/lib/journal
+      - /var/opt/unifi/tmp:size=64m
     environment:
       - UOS_SYSTEM_IP=unifi.example.com
     volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - /path/to/unifi-os-server/persistent:/persistent
       - /path/to/unifi-os-server/var-log:/var/log
       - /path/to/unifi-os-server/data:/data
