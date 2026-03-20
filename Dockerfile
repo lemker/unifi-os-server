@@ -32,7 +32,7 @@ RUN \
     rm -rf \
         /tmp/* \
         /var/lib/apt/lists/* \
-        /var/tmp/*
+        /var/tmp/* \
   fi
 
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
