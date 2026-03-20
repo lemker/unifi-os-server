@@ -118,4 +118,4 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
 fi
 
 # Start systemd
-exec /sbin/init "$@"
+exec /sbin/init
