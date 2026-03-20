@@ -9,9 +9,9 @@ ENV DEBIAN_FRONTEND="noninteractive"
 STOPSIGNAL SIGRTMIN+3
 
 RUN \
-    apt-get update && \
-    apt-get install --no-install-recommends -y \
-        coturn && \
+    # apt-get update && \
+    # apt-get install --no-install-recommends -y \
+    #     coturn && \
     curl -L -o /tmp/unifi-face-shared-lib.deb \
         https://fw-download.ubnt.com/data/unifi-face-shared-lib/0187-uos-deb11-$TARGETARCH-1.0.6-3fa2b2f6-023a-4fba-8d05-83eee79b0580.deb && \
     curl -L -o /tmp/unifi-user-assets.deb \
@@ -23,8 +23,8 @@ RUN \
     dpkg -i \
         /tmp/unifi-face-shared-lib.deb \
         /tmp/unifi-user-assets.deb \
-        /tmp/ms.deb \
-        /tmp/unifi-access.deb && \
+        /tmp/ms.deb && \
+        # /tmp/unifi-access.deb && \
     rm -rf \
         /tmp/* \
         /var/lib/apt/lists/* \
