@@ -67,6 +67,15 @@ if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
     chmod 755 "$RABBITMQ_LOG_DIR"
 fi
 
+# Install unifi-access
+if [ "$UNIFI_ACCESS" == true ]; then
+    mkdir -p /persistent/addons
+
+    curl -LC - -o /persistent/addons/unifi-face-shared-lib_v1.0.6+156.deb \
+      https://fw-download.ubnt.com/data/unifi-face-shared-lib/0187-uos-deb11-arm64-1.0.6-3fa2b2f6-023a-4fba-8d05-83eee79b0580.deb
+    dpkg -i /persistent/addons/unifi-face-shared-lib_v1.0.6+156.deb
+fi
+
 # Apply Synology patches
 SYS_VENDOR="/sys/class/dmi/id/sys_vendor"
 if { [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; } \
