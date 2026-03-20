@@ -8,5 +8,6 @@ STOPSIGNAL SIGRTMIN+3
 
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 
+RUN systemctl enable getty@console.service
 RUN ["chmod", "+x", "/root/uos-entrypoint.sh"]
 ENTRYPOINT ["/root/uos-entrypoint.sh"]
