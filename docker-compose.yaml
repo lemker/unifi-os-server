@@ -1,7 +1,7 @@
 ---
 services:
   unifi-os-server:
-    image: ghcr.io/lemker/unifi-os-server:latest
+    image: ghcr.io/lemker/unifi-os-server:v1.0.0
     container_name: unifi-os-server
     cgroup: host
     cap_add:
