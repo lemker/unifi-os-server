@@ -1,9 +1,43 @@
----
 services:
   unifi-os-server:
-    image: ghcr.io/lemker/unifi-os-server:v1.0.0
     container_name: unifi-os-server
-    cgroup: host
+    image: ghcr.io/lemker/unifi-os-server:v1.0.0
+    hostname: unifi
+    network_mode: bridge
+    restart: unless-stopped
+    pids_limit: 2048
+    environment:
+      TZ: America/Chicago
+      HOST_CONTAINERNAME: unifi-os-server
+      UOS_SYSTEM_IP: unifi
+    ports:
+      - "11443:443/tcp"
+      - "5005:5005/tcp"
+      - "9543:9543/tcp"
+      - "6789:6789/tcp"
+      - "8080:8080/tcp"
+      - "8443:8443/tcp"
+      - "8444:8444/tcp"
+      - "1900:1900/udp"
+      - "3478:3478/udp"
+      - "5514:5514/udp"
+      - "10001:10001/udp"
+      - "10003:10003/udp"
+      - "11084:11084/tcp"
+      - "5671:5671/tcp"
+      - "8880:8880/tcp"
+      - "8881:8881/tcp"
+      - "8882:8882/tcp"
+    volumes:
+      - /mnt/user/appdata/unifi-os-server/persistent:/persistent:rw
+      - /mnt/user/appdata/unifi-os-server/var-log:/var/log:rw
+      - /mnt/user/appdata/unifi-os-server/data:/data:rw
+      - /mnt/user/appdata/unifi-os-server/srv:/srv:rw
+      - /mnt/user/appdata/unifi-os-server/var-lib-unifi:/var/lib/unifi:rw
+      - /mnt/user/appdata/unifi-os-server/var-lib-mongodb:/var/lib/mongodb:rw
+      - /mnt/user/appdata/unifi-os-server/etc-rabbitmq-ssl:/etc/rabbitmq/ssl:rw
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns: host
     cap_add:
       - NET_RAW
       - NET_ADMIN
@@ -13,31 +47,3 @@ services:
       - /tmp:exec
       - /var/lib/journal
       - /var/opt/unifi/tmp:size=64m
-    environment:
-      - UOS_SYSTEM_IP=unifi.example.com
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - /path/to/unifi-os-server/persistent:/persistent
-      - /path/to/unifi-os-server/var-log:/var/log
-      - /path/to/unifi-os-server/data:/data
-      - /path/to/unifi-os-server/srv:/srv
-      - /path/to/unifi-os-server/var-lib-unifi:/var/lib/unifi
-      - /path/to/unifi-os-server/var-lib-mongodb:/var/lib/mongodb
-      - /path/to/unifi-os-server/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
-    ports:
-      - 11443:443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
-      - 8080:8080
-      - 8443:8443 # Optional
-      - 8444:8444 # Optional
-      - 3478:3478/udp
-      - 5514:5514/udp # Optional
-      - 10003:10003/udp
-      - 11084:11084 # Optional
-      - 5671:5671 # Optional
-      - 8880:8880 # Optional
-      - 8881:8881 # Optional
-      - 8882:8882 # Optional
-    restart: unless-stopped
