@@ -1,0 +1,22 @@
+name: balena
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, closed]
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: balena-io/deploy-to-balena-action@63a685c4b9c898c38e66776284a78c4e50ec8c97 # v2.0.136
+        with:
+          balena_token: ${{ secrets.BALENA_TOKEN }}
+          fleet: gh_kubo6472/balena-unifi-os
+          create_tag: true
