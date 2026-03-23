@@ -20,7 +20,6 @@ services:
     environment:
       - UOS_SYSTEM_IP=192.168.18.18
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - unifi:/
     labels:
       - io.balena.features.kernel-modules=1
