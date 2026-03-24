@@ -2,7 +2,7 @@ version: "2.1"
 
 services:
   mongo:
-    image: mongo:4.4
+    image: mongo:4.2
     restart: always
     volumes:
       - db:/data/db
