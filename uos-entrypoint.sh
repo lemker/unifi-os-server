@@ -120,7 +120,7 @@ fi
 
 PGDATA="/data/postgresql"
 
-if [ "$(echo "${skip_pgsql_perm:-}" | tr '[:upper:]' '[:lower:]')" != "true" ]; then
+if [ "$(echo "${SKIP_PGSQL_PERM:-}" | tr '[:upper:]' '[:lower:]')" != "true" ]; then
     if [ -d "$PGDATA" ]; then
         echo "Checking PostgreSQL permissions"
 
@@ -160,7 +160,7 @@ if [ "$(echo "${skip_pgsql_perm:-}" | tr '[:upper:]' '[:lower:]')" != "true" ]; 
         echo "PostgreSQL data directory does not exist, skipping check."
     fi
 else
-    echo "Skipping PostgreSQL permission check because skip_pgsql_perm is true"
+    echo "Skipping PostgreSQL permission check because SKIP_PGSQL_PERM is true"
 fi
 
 # Start systemd
