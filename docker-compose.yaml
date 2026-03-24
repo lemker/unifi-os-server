@@ -1,46 +1,53 @@
 version: "2.1"
 
-volumes:
-  unifi-persistent: {}
-  unifi-var-log: {}
-  unifi-data: {}
-  unifi-srv: {}
-  unifi-var-lib-unifi: {}
-  unifi-var-lib-mongodb: {}
-  unifi-etc-rabbitmq-ssl: {}
-
 services:
-  unifi-os-server:
-    image: ghcr.io/lemker/unifi-os-server:latest
-    container_name: unifi-os-server
-    network_mode: host
-    cap_add:
-      - NET_RAW
-      - NET_ADMIN
-    tmpfs:
-      - /run:exec
-      - /run/lock
-      - /tmp:exec
-      - /var/lib/journal
-      - /var/opt/unifi/tmp:size=64m
-    environment:
-      - UOS_SYSTEM_IP=192.168.18.18
+  mongo:
+    image: mongo:4.4
+    restart: always
     volumes:
-      - unifi-persistent:/persistent
-      - unifi-var-log:/var/log
-      - unifi-data:/data
-      - unifi-srv:/srv
-      - unifi-var-lib-unifi:/var/lib/unifi
-      - unifi-var-lib-mongodb:/var/lib/mongodb
-      - unifi-etc-rabbitmq-ssl:/etc/rabbitmq/ssl
+      - db:/data/db
+      - dbcfg:/data/configdb
+
+  controller:
+    image: jacobalberty/unifi:latest
+    depends_on:
+      - mongo
+    network_mode: host
+    restart: always
+
+    volumes:
+      - dir:/unifi
+      - data:/unifi/data
+      - log:/unifi/log
+      - cert:/unifi/cert
+      - init:/unifi/init.d
+      - run:/var/run/unifi
+      - backup:/unifi/data/backup
+
+    environment:
+      DB_URI: mongodb://localhost:27017/unifi
+      STATDB_URI: mongodb://localhost:27017/unifi_stat
+      DB_NAME: unifi
+
     labels:
-      - io.balena.features.supervisor-api=1
       - io.balena.features.kernel-modules=1
-      - io.balena.features.firmware=1
-    ports:
-      - 80:443
-      - 8080:8080
-      - 3478:3478/udp
-      - 10003:10003/udp
-    restart: unless-stopped
-    privileged: true
+
+  logs:
+    image: bash
+    depends_on:
+      - controller
+    command: bash -c 'tail -F /unifi/log/*.log'
+    restart: always
+    volumes:
+      - log:/unifi/log
+
+volumes:
+  db:
+  dbcfg:
+  data:
+  log:
+  cert:
+  init:
+  dir:
+  run:
+  backup:
