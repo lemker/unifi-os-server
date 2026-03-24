@@ -2,52 +2,37 @@ version: "2.1"
 
 services:
   mongo:
-    image: mongo:4.2.18
+    image: mongo:4.4.18
     restart: always
     volumes:
       - db:/data/db
       - dbcfg:/data/configdb
 
   controller:
-    image: jacobalberty/unifi:latest
+    image: jacobalberty/unifi:v7.3
     depends_on:
       - mongo
     network_mode: host
     restart: always
 
     volumes:
-      - dir:/unifi
       - data:/unifi/data
       - log:/unifi/log
-      - cert:/unifi/cert
-      - init:/unifi/init.d
       - run:/var/run/unifi
-      - backup:/unifi/data/backup
 
     environment:
-      DB_URI: mongodb://localhost:27017/unifi
-      STATDB_URI: mongodb://localhost:27017/unifi_stat
-      DB_NAME: unifi
+      - DB_URI=mongodb://localhost:27017/unifi
+      - STATDB_URI=mongodb://localhost:27017/unifi_stat
+      - DB_NAME=unifi
+      - JVM_MAX_HEAP_SIZE=256M
+      - JVM_INIT_HEAP_SIZE=128M
 
     labels:
       - io.balena.features.kernel-modules=1
-
-  logs:
-    image: bash
-    depends_on:
-      - controller
-    command: bash -c 'tail -F /unifi/log/*.log'
-    restart: always
-    volumes:
-      - log:/unifi/log
 
 volumes:
   db:
   dbcfg:
   data:
   log:
-  cert:
-  init:
-  dir:
   run:
-  backup:
