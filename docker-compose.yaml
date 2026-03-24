@@ -30,7 +30,24 @@ services:
 
     labels:
       - io.balena.features.kernel-modules=1
-
+  
+  tailscale:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: host
+    restart: on-failure
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    labels:
+      - io.balena.features.kernel-modules=1
+    cap_add:
+      - net_admin
+      - net_raw
+      - sys_module
+    tmpfs:
+      - /tmp
+      - /var/run/
 volumes:
   db:
   dbcfg:
