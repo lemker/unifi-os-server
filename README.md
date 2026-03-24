@@ -44,12 +44,13 @@ udp:
 
 # Parameters
 
-## Environment Variables
+| Environment         | Description                                                         | Example Value                     | Recommended |
+|--------------------|---------------------------------------------------------------------|---------------------------------|-----------|
+| `UOS_SYSTEM_IP`     | Hostname or IP address for the UniFi OS Server                      | `unifi.example.com`<br>`192.168.1.100` | ✓         |
+| `TZ`                | System time zone ([TZ database list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)) | `Etc/UTC`                       | ✗         |
+| `HARDWARE_PLATFORM` | Overrides your detected hardware platform                           | `synology`                      | ✗         |
+| `SKIP_PGSQL_PERM`   | Skip PostgreSQL permissions check                                   | `true`                          | ✗         |
 
-| Environment | Description |
-|----|----|
-| UOS_SYSTEM_IP | Hostname or IP for UniFi OS Server |
-| HARDWARE_PLATFORM | Manually set hardware platform |
 
 ### UOS_SYSTEM_IP
 
@@ -62,29 +63,26 @@ Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt de
    set-inform http://$UOS_SYSTEM_IP:8080/inform
    ```
 
-### HARDWARE_PLATFORM
-
-Overrides your detected hardware platform. Accepted values are: `synology`.
 
 ## Ports
 
-| Protocol | Port | Direction | Usage |
-|----|----|----|----|
-| TCP | 11443 | Ingress | UniFi OS Server GUI/API |
-| TCP | 5005 | Ingress | RTP (Real-time Transport Protocol) control protocol |
-| TCP | 9543 | Ingress | UniFi Identity Hub |
-| TCP | 6789 | Ingress | UniFi mobile speed test |
-| TCP | 8080 | Ingress | Device and application communication |
-| TCP | 8443 | Ingress | UniFi Network Application GUI/API |
-| TCP | 8444 | Ingress | Secure Portal for Hotspot |
-| UDP | 3478 | Both | STUN for device adoption and communication *(also required for Remote Management)* |
-| UDP | 5514 | Ingress | Remote syslog capture |
-| UDP | 10003 | Ingress | Device discovery during adoption |
-| TCP | 11084 | Ingress | UniFi Site Supervisor |
-| TCP | 5671 | Ingress | AQMPS |
-| TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |
-| TCP | 8881 | Ingress | Hotspot portal redirection (HTTP) |
-| TCP | 8882 | Ingress | Hotspot portal redirection (HTTP) |
+| Protocol | Port | Direction | Usage | Optional |
+|----------|------|-----------|-------|----------|
+| TCP      | 11443 | Ingress  | UniFi OS Server GUI/API | No |
+| TCP      | 8080  | Ingress  | Device and application communication | No |
+| UDP      | 3478  | Both     | STUN for device adoption & communication *(required for Remote Management)* | No |
+| UDP      | 10003 | Ingress  | Device discovery during adoption | No |
+| TCP      | 5005  | Ingress  | RTP (Real-time Transport Protocol) control | Yes |
+| TCP      | 9543  | Ingress  | UniFi Identity Hub | Yes |
+| TCP      | 6789  | Ingress  | UniFi mobile speed test | Yes |
+| TCP      | 8443  | Ingress  | UniFi Network Application GUI/API | Yes |
+| TCP      | 8444  | Ingress  | Secure Portal for Hotspot | Yes |
+| UDP      | 5514  | Ingress  | Remote syslog capture | Yes |
+| TCP      | 11084 | Ingress  | UniFi Site Supervisor | Yes |
+| TCP      | 5671  | Ingress  | AQMPS | Yes |
+| TCP      | 8880  | Ingress  | Hotspot portal redirection (HTTP) | Yes |
+| TCP      | 8881  | Ingress  | Hotspot portal redirection (HTTP) | Yes |
+| TCP      | 8882  | Ingress  | Hotspot portal redirection (HTTP) | Yes |
 
 # Frequently Asked Questions
 

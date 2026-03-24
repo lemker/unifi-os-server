@@ -1,4 +1,3 @@
----
 services:
   unifi-os-server:
     image: ghcr.io/lemker/unifi-os-server:latest
@@ -25,19 +24,25 @@ services:
       - /path/to/unifi-os-server/var-lib-mongodb:/var/lib/mongodb
       - /path/to/unifi-os-server/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
-      - 11443:443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
-      - 8080:8080
-      - 8443:8443 # Optional
-      - 8444:8444 # Optional
-      - 3478:3478/udp
-      - 5514:5514/udp # Optional
-      - 10003:10003/udp
-      - 11084:11084 # Optional
-      - 5671:5671 # Optional
-      - 8880:8880 # Optional
-      - 8881:8881 # Optional
-      - 8882:8882 # Optional
+      - "11443:443"       # UniFi OS Server GUI/API
+      - "8080:8080"       # Device/application communication
+      - "3478:3478/udp"   # STUN for adoption & remote management
+      - "10003:10003/udp" # Device discovery during adoption
+      - "5005:5005"       # RTP control protocol (Optional)
+      - "9543:9543"       # UniFi Identity Hub (Optional)
+      - "6789:6789"       # UniFi mobile speed test (Optional)
+      - "8443:8443"       # UniFi Network Application GUI/API (Optional)
+      - "8444:8444"       # Secure Portal for Hotspot (Optional)
+      - "11084:11084"     # UniFi Site Supervisor (Optional)
+      - "5671:5671"       # AQMPS (Optional)
+      - "8880:8880"       # Hotspot portal redirection HTTP (Optional)
+      - "8881:8881"       # Hotspot portal redirection HTTP (Optional)
+      - "8882:8882"       # Hotspot portal redirection HTTP (Optional)
+      - "5514:5514/udp"   # Remote syslog capture (Optional)
+    healthcheck:
+      test: ["CMD", "curl", "-k", "-f", "https://localhost:443"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
