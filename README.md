@@ -44,13 +44,12 @@ udp:
 
 # Parameters
 
-| Environment         | Description                                                         | Example Value     | Recommended |
-|--------------------|---------------------------------------------------------------------|-----------------|-----------|
-| `UOS_SYSTEM_IP`     | Hostname or IP address for the UniFi OS Server                      | `192.168.1.100` | ✓         |
-| `HARDWARE_PLATFORM` | Overrides your detected hardware platform                       | `synology`      | ✗         |
-| `TZ`                | System time zone ([TZ database list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)) | `Etc/UTC`       | ✗         |
-| `SKIP_PGSQL_PERM`   | Skip PostgreSQL permissions check                 | `true`          | ✗         |
-
+| Environment         | Description                                                         | Example Value                     | Recommended |
+|--------------------|---------------------------------------------------------------------|---------------------------------|-----------|
+| `UOS_SYSTEM_IP`     | Hostname or IP address for the UniFi OS Server                      | `unifi.example.com`<br>`192.168.1.100` | ✓         |
+| `TZ`                | System time zone ([TZ database list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)) | `Etc/UTC`                       | ✗         |
+| `HARDWARE_PLATFORM` | Overrides your detected hardware platform                           | `synology`                      | ✗         |
+| `SKIP_PGSQL_PERM`   | Skip PostgreSQL permissions check                                   | `true`                          | ✗         |
 
 
 ### UOS_SYSTEM_IP
