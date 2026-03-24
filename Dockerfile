@@ -1,12 +1,14 @@
-FROM ghcr.io/lemker/uosserver:0.0.54-multiarch
+FROM tailscale/tailscale:stable
 
-LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
+COPY entrypoint.sh /entrypoint.sh
 
-ENV UOS_SERVER_VERSION="5.0.6"
+RUN chmod +x entrypoint.sh
 
-STOPSIGNAL SIGRTMIN+3
+CMD ["/entrypoint.sh"]
 
-COPY uos-entrypoint.sh /root/uos-entrypoint.sh
+ENV TS_STATE_DIR "/var/lib/tailscale"
+ENV TS_SOCKET "/var/run/tailscale/tailscaled.sock"
+ENV TS_EXTRA_ARGS "--reset"
+ENV TS_AUTH_ONCE "true"
 
-RUN ["chmod", "+x", "/root/uos-entrypoint.sh"]
-ENTRYPOINT ["/root/uos-entrypoint.sh"]
+ENV REQUIRE_AUTH_KEY "false"
