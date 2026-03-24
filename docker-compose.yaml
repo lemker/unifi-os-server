@@ -34,10 +34,13 @@ services:
       - unifi-var-lib-mongodb:/var/lib/mongodb
       - unifi-etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     labels:
+      - io.balena.features.supervisor-api=1
       - io.balena.features.kernel-modules=1
+      - io.balena.features.firmware=1
     ports:
       - 80:443
       - 8080:8080
       - 3478:3478/udp
       - 10003:10003/udp
     restart: unless-stopped
+    privileged: true
