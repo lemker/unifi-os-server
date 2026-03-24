@@ -20,11 +20,17 @@ services:
     environment:
       - UOS_SYSTEM_IP=192.168.18.18
     volumes:
-      - unifi:/
+      - unifi/persistent:/persistent
+      - unifi/var-log:/var/log
+      - unifi/data:/data
+      - unifi/srv:/srv
+      - unifi/var-lib-unifi:/var/lib/unifi
+      - unifi/var-lib-mongodb:/var/lib/mongodb
+      - unifi/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     labels:
       - io.balena.features.kernel-modules=1
     ports:
-      - 11443:443
+      - 80:443
       - 8080:8080
       - 3478:3478/udp
       - 10003:10003/udp
