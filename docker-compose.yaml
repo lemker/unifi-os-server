@@ -4,6 +4,7 @@ services:
   mongo:
     image: mongo:4.4.18
     restart: always
+    network_mode: host
     volumes:
       - db:/data/db
       - dbcfg:/data/configdb
