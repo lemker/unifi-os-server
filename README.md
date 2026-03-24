@@ -44,10 +44,10 @@ udp:
 
 # Parameters
 
-| Environment         | Description                                                         | Example Value     | Mandatory |
+| Environment         | Description                                                         | Example Value     | Recommended |
 |--------------------|---------------------------------------------------------------------|-----------------|-----------|
 | `UOS_SYSTEM_IP`     | Hostname or IP address for the UniFi OS Server                      | `192.168.1.100` | ✓         |
-| `HARDWARE_PLATFORM` | Manually set hardware platform identifier                           | `synology`      | ✗         |
+| `HARDWARE_PLATFORM` | Overrides your detected hardware platform                       | `synology`      | ✗         |
 | `TZ`                | System time zone ([TZ database list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)) | `Etc/UTC`       | ✗         |
 | `SKIP_PGSQL_PERM`   | Skip PostgreSQL permissions check                 | `true`          | ✗         |
 
@@ -64,9 +64,6 @@ Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt de
    set-inform http://$UOS_SYSTEM_IP:8080/inform
    ```
 
-### HARDWARE_PLATFORM
-
-Overrides your detected hardware platform. Accepted values are: `synology`.
 
 ## Ports
 
