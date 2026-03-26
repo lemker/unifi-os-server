@@ -2,8 +2,9 @@ FROM ghcr.io/lemker/uosserver:0.0.54-multiarch
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 
-ENV UOS_SERVER_VERSION="5.0.6"
 ENV DEBIAN_FRONTEND="noninteractive"
+ENV DEBCONF_NONINTERACTIVE_SEEN=true
+ENV UOS_SERVER_VERSION="5.0.6"
 
 ARG TARGETARCH
 ARG UNIFI_VERSION="10.1.89"
