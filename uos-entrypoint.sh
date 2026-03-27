@@ -103,16 +103,22 @@ if { [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; } \
 fi
 
 # Set UOS_SYSTEM_IP
+if [ -n "$UOS_SYSTEM_IP_FILE" ] && [ -f "$UOS_SYSTEM_IP_FILE" ]; then
+    UOS_SYSTEM_IP_VALUE=$(< "$UOS_SYSTEM_IP_FILE")
+elif [ -n "${UOS_SYSTEM_IP+1}" ]; then
+    UOS_SYSTEM_IP_VALUE="$UOS_SYSTEM_IP"
+fi
+
 UNIFI_SYSTEM_PROPERTIES="/var/lib/unifi/system.properties"
-if [ -n "${UOS_SYSTEM_IP+1}" ]; then
-    echo "Setting UOS_SYSTEM_IP to $UOS_SYSTEM_IP"
+if [ -n "${UOS_SYSTEM_IP_VALUE+1}" ]; then
+    echo "Setting UOS_SYSTEM_IP to $UOS_SYSTEM_IP_VALUE"
     if [ ! -f "$UNIFI_SYSTEM_PROPERTIES" ]; then
-        echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
+        echo "system_ip=$UOS_SYSTEM_IP_VALUE" >> "$UNIFI_SYSTEM_PROPERTIES"
     else
         if grep -q "^system_ip=.*" "$UNIFI_SYSTEM_PROPERTIES"; then
-            sed -i 's/^system_ip=.*/system_ip='"$UOS_SYSTEM_IP"'/' "$UNIFI_SYSTEM_PROPERTIES"
+            sed -i 's/^system_ip=.*/system_ip='"$UOS_SYSTEM_IP_VALUE"'/' "$UNIFI_SYSTEM_PROPERTIES"
         else
-            echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
+            echo "system_ip=$UOS_SYSTEM_IP_VALUE" >> "$UNIFI_SYSTEM_PROPERTIES"
         fi
     fi
 fi
