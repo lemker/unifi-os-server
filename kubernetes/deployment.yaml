@@ -20,10 +20,18 @@ spec:
       - name: unifi-os-server
         image: ghcr.io/lemker/unifi-os-server:latest
         env:
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
         - name: UOS_SYSTEM_IP
           value: "unifi.example.com"
         securityContext:
           privileged: true
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/bash", "-c", "echo $HOST_IP host.docker.internal >> /etc/hosts"]
         volumeMounts:
         - name: unifi-os-server-data
           mountPath: /persistent
