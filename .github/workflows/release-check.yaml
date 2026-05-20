@@ -89,7 +89,7 @@ jobs:
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
     uses: ./.github/workflows/build-uosserver.yaml
     with:
-      tag: ${{ needs.release-check.outputs.UOS_VERSION }}
+      tag: ${{ needs.extract-linux-amd64.outputs.PODMAN_IMAGE_TAG }}
 
   create-pr:
     runs-on: ubuntu-latest
