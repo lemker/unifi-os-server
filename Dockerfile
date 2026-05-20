@@ -1,4 +1,4 @@
-FROM ghcr.io/lemker/uosserver:0.0.54-multiarch
+FROM ghcr.io/lemker/uosserver:0.0.56-multiarch
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 
