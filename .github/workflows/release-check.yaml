@@ -2,13 +2,13 @@ name: Check for new releases
 
 on:
   workflow_dispatch:
-  #schedule:
-  #  - cron: "0 0 * * *"
+  schedule:
+    - cron: "0 * * * *"
 
 jobs:
   release-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     outputs:
       UOS_VERSION: ${{ steps.version.outputs.UOS_VERSION }}
       UOS_DOWNLOAD_AMD64: ${{ steps.version.outputs.UOS_DOWNLOAD_AMD64 }}
@@ -59,15 +59,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Check if release already exists
+      - name: Check if pull request already exists
         id: release
-        run: |          
-          if grep -q "UOS_SERVER_VERSION=\"${{ env.UOS_VERSION }}\"" Dockerfile; then
-            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} already exists, exiting!"
-            echo "released=true" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          pr_count=$(gh pr list \
+            --repo "${GITHUB_REPOSITORY}" \
+            --head "updates-unifi-core-${{ env.UOS_VERSION }}" \
+            --state all \
+            --json number \
+            --jq 'length')
+          if [ "${pr_count}" -gt 0 ]; then
+            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} already exists!"
+            echo "released=true" >> "$GITHUB_OUTPUT"
           else
             echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} does not exist!"
-            echo "released=false" >> $GITHUB_OUTPUT
+            echo "released=false" >> "$GITHUB_OUTPUT"
           fi
         
   extract-linux-amd64:
