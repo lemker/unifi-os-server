@@ -3,11 +3,11 @@ name: Check for new releases
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "27 * * * *"
 
 jobs:
   release-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       UOS_VERSION: ${{ steps.version.outputs.UOS_VERSION }}
@@ -102,7 +102,7 @@ jobs:
       tag: ${{ needs.extract-linux-amd64.outputs.PODMAN_IMAGE_TAG }}
 
   create-pr:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [release-check, extract-linux-amd64, extract-linux-arm64, build-uosserver]
     if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
     timeout-minutes: 10
