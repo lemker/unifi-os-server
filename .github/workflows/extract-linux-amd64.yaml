@@ -58,7 +58,7 @@ jobs:
           podman images
 
       - name: Login to GHCR
-        uses: redhat-actions/podman-login@v1
+        uses: redhat-actions/podman-login@4c93cb1ea36b10156ea541570dc69bc04dffe10e # v1.1.2
         with:
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
