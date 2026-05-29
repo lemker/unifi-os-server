@@ -73,10 +73,10 @@ jobs:
             --json number \
             --jq 'length')
           if [ "${pr_count}" -gt 0 ]; then
-            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} already exists!"
+            echo "APP_VERSION ${{ env.UOS_VERSION }} already exists!"
             echo "released=true" >> "$GITHUB_OUTPUT"
           else
-            echo "UOS_SERVER_VERSION ${{ env.UOS_VERSION }} does not exist!"
+            echo "APP_VERSION ${{ env.UOS_VERSION }} does not exist!"
             echo "released=false" >> "$GITHUB_OUTPUT"
           fi
         
@@ -118,7 +118,7 @@ jobs:
       - name: Update Dockerfile
         run: |
           sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG-multiarch/" Dockerfile
-          sed -i "s/UOS_SERVER_VERSION=.*/UOS_SERVER_VERSION=\"$UOS_VERSION\"/" Dockerfile
+          sed -i "s/APP_VERSION=.*/APP_VERSION=\"$UOS_VERSION\"/" Dockerfile
       
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1

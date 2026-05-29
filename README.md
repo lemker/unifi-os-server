@@ -29,9 +29,8 @@ tcp:
   9543: "unifi/unifi-os-server-id-hub-svc:9543" # Optional
   6789: "unifi/unifi-os-server-mobile-speedtest-svc:6789" # Optional
   8080: "unifi/unifi-os-server-communication-svc:8080"
-  8443: "unifi/unifi-os-server-network-app-svc:8443" # Optional
   8444: "unifi/unifi-os-server-hotspot-secured-svc:8444" # Optional
-  11084: "unifi/unifi-os-server-site-supervisor-svc:11084" # Optional
+  28082: "unifi/unifi-os-server-support-files:28082" # Optional
   5671: "unifi/unifi-os-server-aqmps-svc:5671" # Optional
   8880: "unifi/unifi-os-server-hotspot-redirect-0-svc:8880" # Optional
   8881: "unifi/unifi-os-server-hotspot-redirect-1-svc:8881" # Optional
@@ -75,12 +74,11 @@ Overrides your detected hardware platform. Accepted values are: `synology`.
 | TCP | 9543 | Ingress | UniFi Identity Hub |
 | TCP | 6789 | Ingress | UniFi mobile speed test |
 | TCP | 8080 | Ingress | Device and application communication |
-| TCP | 8443 | Ingress | UniFi Network Application GUI/API |
 | TCP | 8444 | Ingress | Secure Portal for Hotspot |
 | UDP | 3478 | Both | STUN for device adoption and communication *(also required for Remote Management)* |
 | UDP | 5514 | Ingress | Remote syslog capture |
 | UDP | 10003 | Ingress | Device discovery during adoption |
-| TCP | 11084 | Ingress | UniFi Site Supervisor |
+| TCP | 28082 | Ingress | Device support files download |
 | TCP | 5671 | Ingress | AQMPS |
 | TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |
 | TCP | 8881 | Ingress | Hotspot portal redirection (HTTP) |
