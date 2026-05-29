@@ -1,8 +1,8 @@
-FROM ghcr.io/lemker/uosserver:0.0.56-multiarch
+FROM ghcr.io/lemker/uosserver:f77bca81ecbf-multiarch
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 
-ENV UOS_SERVER_VERSION="5.0.8"
+ENV UOS_SERVER_VERSION="5.1.15"
 
 STOPSIGNAL SIGRTMIN+3
 
