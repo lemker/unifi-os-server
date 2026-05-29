@@ -26,15 +26,15 @@ else
     exit 1
 fi
 
+echo "Setting APP_MODEL to $APP_MODEL"
+echo "Setting APP_VERSION to $APP_VERSION"
+echo "Setting FIRMWARE_PLATFORM to $FIRMWARE_PLATFORM"
+echo "Setting PRODUCT_NAME to $PRODUCT_NAME"
+
 # Read version from package.json and write version string
 echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 echo "$PRODUCT_NAME" > /usr/lib/product_name
-
-echo "Set APP_MODEL to $APP_MODEL"
-echo "Set APP_VERSION to $APP_VERSION"
-echo "Set FIRMWARE_PLATFORM to $FIRMWARE_PLATFORM"
-echo "Set PRODUCT_NAME to $PRODUCT_NAME"
 
 # Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host) 
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
