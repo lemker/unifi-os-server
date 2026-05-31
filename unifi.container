@@ -1,0 +1,13 @@
+[Unit]
+Description=Unifi OS Server
+After=network-online.target
+
+[Container]
+Image=localhost/unifi-os-server:latest
+ContainerName=unifi
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

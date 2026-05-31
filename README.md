@@ -54,6 +54,19 @@ and silently suppresses `EPERM` for API filesystems, allowing systemd to continu
 
 See [docker-compose.yaml](https://github.com/lemker/unifi-os-server/blob/main/docker-compose.yaml)
 
+## Podman (Quadlet)
+
+Build the image locally and run with the provided Quadlet container file:
+
+```bash
+git clone https://github.com/lemker/unifi-os-server.git
+cd unifi-os-server
+podman build -t unifi-os-server:latest .
+cp unifi.container ~/.config/containers/systemd/
+systemctl --user daemon-reload
+systemctl --user start unifi
+```
+
 ## Kubernetes
 
 See [kubernetes](https://github.com/lemker/unifi-os-server/tree/main/kubernetes)
