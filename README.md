@@ -13,6 +13,45 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 ## Docker Compose
 
+### Quick start
+
+```bash
+cp .env.sample .env
+# Edit .env and set UOS_SYSTEM_IP and VOLUME_PREFIX
+```
+
+Run with Docker:
+
+```bash
+docker compose up -d
+```
+
+Run with Podman:
+
+Podman does not support the Docker-specific `host-gateway` value in `extra_hosts`. Use the podman-specific compose file
+and build locally (the published image may not yet include the latest rootless fixes):
+
+```bash
+podman compose -f docker-compose.podman.yaml up -d
+```
+
+> **Rootless Podman prerequisites:** Rootless Podman requires subordinate UID and GID ranges in `/etc/subuid` and 
+> `/etc/subgid` to map container user namespaces. Without them, unpacking images fails with:
+> ```
+> unpacking failed: potentially insufficient UIDs or GIDs available in user namespace
+> ```
+> Fix:
+> ```bash
+> sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
+> podman system migrate
+> ```
+>
+> The container runs systemd as PID 1 to manage all services. Two mechanisms enable this under rootless Podman:
+> 1. **`ENTRYPOINT ["/sbin/init"]`** — Podman auto-detects systemd and enables writable cgroupfs plus tmpfs at `/run`
+and `/run/lock`.
+> 2. **LD_PRELOAD mount wrapper** (`libuos-mount-wrapper.so`) — A fallback that intercepts `mount()`/`umount2()` calls
+and silently suppresses `EPERM` for API filesystems, allowing systemd to continue booting even without systemd mode.
+
 See [docker-compose.yaml](https://github.com/lemker/unifi-os-server/blob/main/docker-compose.yaml)
 
 ## Kubernetes
@@ -88,8 +127,6 @@ Overrides your detected hardware platform. Accepted values are: `synology`.
 
 ## What is the difference between images?
 
-The `uosserver` image is provided by UniFi, extracted from the installation binary. The `unifi-os-server` image provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment variables.
-
-## Why does the container need specific settings for cgroup and tmpfs?
-
-The underlying structure of UniFi OS Server runs every component as systemd services which requires access to the host `cgroup`.
+The `uosserver` image is provided by UniFi, extracted from the installation binary. The `unifi-os-server` image
+provides better compatibility for Docker and Kubernetes with directory fixes and configuration through environment
+variables.

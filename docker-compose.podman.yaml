@@ -1,14 +1,15 @@
 ---
 services:
   unifi-os-server:
-    image: ghcr.io/lemker/unifi-os-server:latest
+# use this if cooking container locally
+    image: unifi-os-server:latest
+# use this if using container from published source
+#    image: ghcr.io/lemker/unifi-os-server:latest
+    build: .
     container_name: unifi-os-server
-    cgroup: host
     cap_add:
       - NET_RAW
       - NET_ADMIN
-    extra_hosts:
-      host.docker.internal: host-gateway
     tmpfs:
       - /run:exec
       - /run/lock
@@ -17,7 +18,6 @@ services:
       - /var/opt/unifi/tmp:size=64m
     env_file: .env
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - ${VOLUME_PREFIX}/persistent:/persistent
       - ${VOLUME_PREFIX}/var-log:/var/log
       - ${VOLUME_PREFIX}/data:/data
@@ -27,17 +27,17 @@ services:
       - ${VOLUME_PREFIX}/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
       - 11443:443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
+      - 5005:5005
+      - 9543:9543
+      - 6789:6789
       - 8080:8080
-      - 8444:8444 # Optional
+      - 8444:8444
       - 3478:3478/udp
-      - 5514:5514/udp # Optional
+      - 5514:5514/udp
       - 10003:10003/udp
-      - 127.0.0.1:11084:11084 # Optional
-      - 5671:5671 # Optional
-      - 8880:8880 # Optional
-      - 8881:8881 # Optional
-      - 8882:8882 # Optional
+      - 127.0.0.1:11084:11084
+      - 5671:5671
+      - 8880:8880
+      - 8881:8881
+      - 8882:8882
     restart: unless-stopped
