@@ -1,0 +1,51 @@
+[Unit]
+Description=UniFi OS Server
+
+[Container]
+AddCapability=NET_ADMIN
+AddCapability=NET_RAW
+AddHost=host.containers.internal:host-gateway
+AutoUpdate=registry
+ContainerName=unifi-os-server
+Environment=UOS_SYSTEM_IP=unifi.example.com
+GlobalArgs=--runtime crun
+Image=ghcr.io/lemker/unifi-os-server:latest
+LogDriver=none
+Network=pasta:--ns-ifname=eth0
+PodmanArgs=--cgroupns=host
+# Required
+PublishPort=11443:443
+PublishPort=8080:8080
+PublishPort=3478:3478/udp
+PublishPort=10003:10003/udp
+# Optional
+PublishPort=5005:5005
+PublishPort=9543:9543
+PublishPort=6789:6789
+PublishPort=8444:8444
+PublishPort=127.0.0.1:11084:11084
+PublishPort=5671:5671
+PublishPort=8880:8880
+PublishPort=8881:8881
+PublishPort=8882:8882
+PublishPort=5514:5514/udp
+SecurityLabelDisable=true
+Tmpfs=/run:exec
+Tmpfs=/run/lock
+Tmpfs=/tmp:exec
+Tmpfs=/var/lib/journal
+Tmpfs=/var/opt/unifi/tmp:size=64m
+Volume=/sys/fs/cgroup:/sys/fs/cgroup:rw
+Volume=/path/to/unifi-os-server/persistent:/persistent
+Volume=/path/to/unifi-os-server/var-log:/var/log
+Volume=/path/to/unifi-os-server/data:/data
+Volume=/path/to/unifi-os-server/srv:/srv
+Volume=/path/to/unifi-os-server/var-lib-unifi:/var/lib/unifi
+Volume=/path/to/unifi-os-server/var-lib-mongodb:/var/lib/mongodb
+Volume=/path/to/unifi-os-server/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target default.target

@@ -41,6 +41,12 @@ udp:
   10003: "unifi/unifi-os-server-discovery-svc:10003"
 ```
 
+## Podman Quadlet
+
+See [unifi-os-server.container](https://github.com/lemker/unifi-os-server/blob/main/unifi-os-server.container)
+
+The deployment is designed for a non-privileged user. `SecurityLabelDisable=true` is needed for the `cgroup` volume to be accessable on systems with SELinux.
+
 # Parameters
 
 ## Environment Variables
