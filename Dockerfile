@@ -12,3 +12,4 @@ COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 
 RUN ["chmod", "+x", "/root/uos-entrypoint.sh"]
 ENTRYPOINT ["/root/uos-entrypoint.sh"]
+CMD ["/sbin/init"]

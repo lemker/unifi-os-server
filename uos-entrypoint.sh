@@ -120,5 +120,8 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
     fi
 fi
 
-# Start systemd
-exec /sbin/init
+# Start systemd or provided container run command
+if [ $# -eq 0 ]; then
+    set -- /sbin/init
+fi
+exec "$@"
