@@ -31,7 +31,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge and push manifest
-        uses: int128/docker-manifest-create-action@b9d644eaa3312dd895ffdafb19333a7b266e6ba9 # v2.21.0
+        uses: int128/docker-manifest-create-action@126c2b2195800ebc112cffe9ad6c2e2cce16eff2 # v2.22.0
         with:
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag }}-multiarch
