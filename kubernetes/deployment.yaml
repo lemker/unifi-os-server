@@ -17,45 +17,57 @@ spec:
         app: unifi-os-server
     spec:
       containers:
-      - name: unifi-os-server
-        image: ghcr.io/lemker/unifi-os-server:latest
-        env:
-        - name: UOS_SYSTEM_IP
-          value: "unifi.example.com"
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: unifi-os-server-data
-          mountPath: /persistent
-          subPath: persistent
-        - name: unifi-os-server-data
-          mountPath: /var/log
-          subPath: log
-        - name: unifi-os-server-data
-          mountPath: /data
-          subPath: data
-        - name: unifi-os-server-data
-          mountPath: /srv
-          subPath: srv
-        - name: unifi-os-server-data
-          mountPath: /var/lib/unifi
-          subPath: unifi
-        - name: unifi-os-server-data
-          mountPath: /var/lib/mongodb
-          subPath: mongodb
-        - name: unifi-os-server-data
-          mountPath: /etc/rabbitmq/ssl
-          subPath: rabbitmq
-        livenessProbe:
-          httpGet:
-            path: /api/ping
-            port: 80
-          initialDelaySeconds: 10          
-          periodSeconds: 60
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
+        - name: unifi-os-server
+          image: ghcr.io/lemker/unifi-os-server:latest
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: UOS_SYSTEM_IP
+              value: "unifi.example.com"
+          securityContext:
+            privileged: true
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "echo $HOST_IP host.docker.internal >> /etc/hosts"]
+          volumeMounts:
+            - name: unifi-os-server-data
+              mountPath: /persistent
+              subPath: persistent
+            - name: unifi-os-server-data
+              mountPath: /var/log
+              subPath: log
+            - name: unifi-os-server-data
+              mountPath: /data
+              subPath: data
+            - name: unifi-os-server-data
+              mountPath: /srv
+              subPath: srv
+            - name: unifi-os-server-data
+              mountPath: /var/lib/unifi
+              subPath: unifi
+            - name: unifi-os-server-data
+              mountPath: /var/lib/mongodb
+              subPath: mongodb
+            - name: unifi-os-server-data
+              mountPath: /etc/rabbitmq/ssl
+              subPath: rabbitmq
+          ports:
+            - containerPort: 11084
+              hostPort: 11084
+              hostIP: 127.0.0.1
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: 80
+            initialDelaySeconds: 10          
+            periodSeconds: 60
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
       volumes:
-      - name: unifi-os-server-data
-        persistentVolumeClaim:
-          claimName: unifi-os-server-pvc
+        - name: unifi-os-server-data
+          persistentVolumeClaim:
+            claimName: unifi-os-server-pvc

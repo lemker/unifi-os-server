@@ -1,8 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigestsToSemver"
   ],
   "prConcurrentLimit": 0,
-  "prHourlyLimit": 10
+  "prHourlyLimit": 10,
+  "minimumReleaseAge": "1 week",
+  "internalChecksFilter": "strict",
+  "ignorePaths": ["Dockerfile"]
 }
