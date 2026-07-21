@@ -1,4 +1,5 @@
-FROM ghcr.io/lemker/uosserver:ab51f5e215ae-multiarch
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 

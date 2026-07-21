@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "27 * * * *"
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   release-check:
     runs-on: ubuntu-24.04
@@ -14,7 +18,7 @@ jobs:
       UOS_DOWNLOAD_AMD64: ${{ steps.version.outputs.UOS_DOWNLOAD_AMD64 }}
       UOS_DOWNLOAD_ARM64: ${{ steps.version.outputs.UOS_DOWNLOAD_ARM64 }}
       RELEASED: ${{ steps.release.outputs.released }}
-  
+
     steps:
       - name: Get latest version
         run: |
@@ -22,16 +26,15 @@ jobs:
           curl -sX GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~product~~unifi-os-server&filter=eq~~platform~~linux-arm64&filter=eq~~channel~~release" > linux-arm64.json
           jq empty linux-amd64.json
           jq empty linux-arm64.json
-      
-      - name: Extract version and download url for amd64
+
+      - name: Extract version and download urls
         id: version
         run: |
-          # Check that there are firmware entries
           if [ "$(jq '._embedded.firmware | length' linux-amd64.json)" -eq 0 ]; then
             echo "No firmware entries found" >&2
             exit 1
           fi
-          
+
           UOS_VERSION=$(jq -r '._embedded.firmware[0].version // empty' linux-amd64.json | sed 's/^v//')
           UOS_DOWNLOAD_AMD64=$(jq -r '._embedded.firmware[0]._links.data.href // empty' linux-amd64.json)
           UOS_DOWNLOAD_ARM64=$(jq -r '._embedded.firmware[0]._links.data.href // empty' linux-arm64.json)
@@ -40,21 +43,10 @@ jobs:
             echo "Missing version or download URL in JSON" >&2
             exit 1
           fi
-          
-          # Export to env
-          echo "UOS_VERSION=$UOS_VERSION" >> "$GITHUB_ENV"
-          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64" >> "$GITHUB_ENV"
-          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64" >> "$GITHUB_ENV"
 
-          # Export to outputs
-          echo "UOS_VERSION=$UOS_VERSION" >> $GITHUB_OUTPUT
-          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64" >> $GITHUB_OUTPUT
-          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64" >> $GITHUB_OUTPUT
-
-          # Print variables
-          echo "UOS_VERSION=$UOS_VERSION"
-          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64"
-          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64"
+          echo "UOS_VERSION=$UOS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "UOS_DOWNLOAD_AMD64=$UOS_DOWNLOAD_AMD64" >> "$GITHUB_OUTPUT"
+          echo "UOS_DOWNLOAD_ARM64=$UOS_DOWNLOAD_ARM64" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -65,71 +57,148 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
           pr_count=$(gh pr list \
             --repo "${GITHUB_REPOSITORY}" \
-            --head "updates-unifi-core-${{ env.UOS_VERSION }}" \
+            --head "updates-unifi-core-${{ steps.version.outputs.UOS_VERSION }}" \
             --state all \
             --json number \
             --jq 'length')
           if [ "${pr_count}" -gt 0 ]; then
-            echo "APP_VERSION ${{ env.UOS_VERSION }} already exists!"
+            echo "APP_VERSION ${{ steps.version.outputs.UOS_VERSION }} already exists!"
             echo "released=true" >> "$GITHUB_OUTPUT"
           else
-            echo "APP_VERSION ${{ env.UOS_VERSION }} does not exist!"
+            echo "APP_VERSION ${{ steps.version.outputs.UOS_VERSION }} does not exist!"
             echo "released=false" >> "$GITHUB_OUTPUT"
           fi
-        
-  extract-linux-amd64:
+
+  build:
     needs: release-check
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/extract-linux-amd64.yaml
-    with:
-      UOS_DOWNLOAD: ${{ needs.release-check.outputs.UOS_DOWNLOAD_AMD64 }}
-
-  extract-linux-arm64:
-    needs: release-check
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/extract-linux-arm64.yaml
-    with:
-      UOS_DOWNLOAD: ${{ needs.release-check.outputs.UOS_DOWNLOAD_ARM64 }}
-
-  build-uosserver:
-    needs: [release-check, extract-linux-amd64, extract-linux-arm64]
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    uses: ./.github/workflows/build-uosserver.yaml
-    with:
-      tag: ${{ needs.extract-linux-amd64.outputs.PODMAN_IMAGE_TAG }}
-
-  create-pr:
-    runs-on: ubuntu-24.04
-    needs: [release-check, extract-linux-amd64, extract-linux-arm64, build-uosserver]
-    if: "${{ needs.release-check.outputs.RELEASED == 'false' }}"
-    timeout-minutes: 10
-
-    env:
-      UOS_VERSION: ${{ needs.release-check.outputs.UOS_VERSION }}
-      PODMAN_IMAGE_TAG: ${{ needs.extract-linux-amd64.outputs.PODMAN_IMAGE_TAG }}
-
+    if: needs.release-check.outputs.RELEASED == 'false'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            suffix: linux-amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            suffix: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Update Dockerfile
+      - name: Download installer
         run: |
-          sed -i "s/uosserver:.*/uosserver:$PODMAN_IMAGE_TAG-multiarch/" Dockerfile
+          if [ "${{ matrix.suffix }}" = "linux-amd64" ]; then
+            URL="${{ needs.release-check.outputs.UOS_DOWNLOAD_AMD64 }}"
+          else
+            URL="${{ needs.release-check.outputs.UOS_DOWNLOAD_ARM64 }}"
+          fi
+          curl -fSL -o unifi-os-server "$URL"
+
+      - name: Extract OCI image from installer
+        run: |
+          # The installer is an ELF+ZIP polyglot — the OCI image is in the
+          # appended ZIP archive. No need to execute the installer.
+          # unzip returns exit code 1 for the "extra bytes" warning but
+          # extracts successfully, so we allow exit 1.
+          unzip -o unifi-os-server image.tar || [ $? -le 1 ]
+          rm unifi-os-server
+          test -f image.tar
+
+      - name: Load base image
+        id: base
+        run: |
+          IMAGE_REF=$(podman load -i image.tar | grep -oP '(?:Loaded image\(s\): |Loaded image: )\K\S+')
+          echo "image_ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
+          echo "Loaded: $IMAGE_REF"
+          rm image.tar
+
+      - name: Build final image
+        env:
+          APP_VERSION: ${{ needs.release-check.outputs.UOS_VERSION }}
+        run: |
+          sed -i "s/APP_VERSION=.*/APP_VERSION=\"$APP_VERSION\"/" Dockerfile
+          podman build \
+            --build-arg BASE_IMAGE=${{ steps.base.outputs.image_ref }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-check.outputs.UOS_VERSION }}-${{ matrix.suffix }} \
+            .
+
+      - name: Login to GHCR
+        uses: redhat-actions/podman-login@4c93cb1ea36b10156ea541570dc69bc04dffe10e # v1.1.2
+        with:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          registry: ${{ env.REGISTRY }}
+
+      - name: Push image
+        run: |
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-check.outputs.UOS_VERSION }}-${{ matrix.suffix }}
+
+  merge:
+    needs: [release-check, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multiarch manifest
+        env:
+          VERSION: ${{ needs.release-check.outputs.UOS_VERSION }}
+        run: |
+          docker manifest create \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-linux-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-linux-arm64
+
+          docker manifest push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+
+          docker manifest create \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-linux-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-linux-arm64
+
+          docker manifest push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  create-pr:
+    runs-on: ubuntu-24.04
+    needs: [release-check, merge]
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Update version in Dockerfile
+        env:
+          UOS_VERSION: ${{ needs.release-check.outputs.UOS_VERSION }}
+        run: |
           sed -i "s/APP_VERSION=.*/APP_VERSION=\"$UOS_VERSION\"/" Dockerfile
-      
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update UniFi OS Server to ${{ env.UOS_VERSION }}"
+          commit-message: "Update UniFi OS Server to ${{ needs.release-check.outputs.UOS_VERSION }}"
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          branch: updates-unifi-core-${{ env.UOS_VERSION }}
+          branch: updates-unifi-core-${{ needs.release-check.outputs.UOS_VERSION }}
           base: main
-          title: "Update UniFi OS Server to ${{ env.UOS_VERSION }}"
+          title: "Update UniFi OS Server to ${{ needs.release-check.outputs.UOS_VERSION }}"
           body: |
-            Bump uosserver image to `${{ env.PODMAN_IMAGE_TAG }}`
-            Bump UniFi OS Server to `${{ env.UOS_VERSION }}`
+            Bump UniFi OS Server to `${{ needs.release-check.outputs.UOS_VERSION }}`
