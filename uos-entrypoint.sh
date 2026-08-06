@@ -66,9 +66,11 @@ chown -R mongodb:mongodb "$MONGODB_LIB_DIR"
 PGDATA="/data/postgresql"
 if [ -d "$PGDATA" ]; then
     echo "Setting PostgreSQL permissions"
-    find "$PGDATA" -type d -exec chmod 700 {} \;
-    find "$PGDATA" -type f -exec chmod 600 {} \;
     chown -R postgres:postgres "$PGDATA"
+    find "$PGDATA" -type d -exec chmod 755 {} \;
+    find "$PGDATA" -type f -exec chmod 644 {} \;
+    find "$PGDATA/14/main/data" -type d -exec chmod 700 {} \;
+    find "$PGDATA/14/main/data" -type f -exec chmod 600 {} \;
 fi
 
 # Initialize rabbitmq log dirs
