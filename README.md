@@ -48,7 +48,6 @@ udp:
 | `UOS_SYSTEM_IP`     | Hostname or IP address for the UniFi OS Server                      | `unifi.example.com`<br>`192.168.1.100` | ✓         |
 | `TZ`                | System time zone ([TZ database list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)) | `Etc/UTC`                       | ✗         |
 | `HARDWARE_PLATFORM` | Overrides your detected hardware platform                           | `synology`                      | ✗         |
-| `SKIP_PGSQL_PERM`   | Skip PostgreSQL permissions check                                   | `true`                          | ✗         |
 
 
 ### UOS_SYSTEM_IP
@@ -78,6 +77,7 @@ Set UniFi OS Server hostname (recommended) or IP address for inform. To adopt de
 | TCP      | 8444  | Ingress  | Secure Portal for Hotspot | Yes |
 | UDP      | 5514  | Ingress  | Remote syslog capture | Yes |
 | TCP      | 11084 | Ingress  | UniFi Site Supervisor | Yes |
+| TCP      | 28082 | Ingress  | Device support files download | Yes |
 | TCP      | 5671  | Ingress  | AQMPS | Yes |
 | TCP      | 8880  | Ingress  | Hotspot portal redirection (HTTP) | Yes |
 | TCP      | 8881  | Ingress  | Hotspot portal redirection (HTTP) | Yes |

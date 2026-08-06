@@ -62,6 +62,15 @@ fi
 MONGODB_LIB_DIR="/var/lib/mongodb"
 chown -R mongodb:mongodb "$MONGODB_LIB_DIR"
 
+# Initialize postgresql data dir permissions
+PGDATA="/data/postgresql"
+if [ -d "$PGDATA" ]; then
+    echo "Setting PostgreSQL permissions"
+    find "$PGDATA" -type d -exec chmod 700 {} \;
+    find "$PGDATA" -type f -exec chmod 600 {} \;
+    chown -R postgres:postgres "$PGDATA"
+fi
+
 # Initialize rabbitmq log dirs
 RABBITMQ_LOG_DIR="/var/log/rabbitmq"
 if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
@@ -118,52 +127,6 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
             echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
         fi
     fi
-fi
-
-
-PGDATA="/data/postgresql"
-
-if [ "$(echo "${SKIP_PGSQL_PERM:-}" | tr '[:upper:]' '[:lower:]')" != "true" ]; then
-    if [ -d "$PGDATA" ]; then
-        echo "Checking PostgreSQL permissions"
-
-        NEED_FIX=0
-
-        if find "$PGDATA" ! -user postgres -o ! -group postgres \
-               -o -type d ! -perm 700 -o -type f ! -perm 600 | grep -q .; then
-            echo "Ownership or permission issue detected"
-            NEED_FIX=1
-        fi
-
-        if [ "$NEED_FIX" -eq 1 ]; then
-            echo "Applying correct permissions..."
-            find "$PGDATA" -type d -exec chmod 700 {} \;
-            find "$PGDATA" -type f -exec chmod 600 {} \;
-            chown -R postgres:postgres "$PGDATA"
-            systemctl restart postgresql@14-main
-
-            echo -n "Waiting for PostgreSQL to start"
-            TIMEOUT=30
-            while ! systemctl is-active --quiet postgresql@14-main && [ $TIMEOUT -gt 0 ]; do
-                echo -n "."
-                sleep 1
-                TIMEOUT=$((TIMEOUT-1))
-            done
-
-            if systemctl is-active --quiet postgresql@14-main; then
-                echo " PostgreSQL is running."
-            else
-                echo "ERROR: PostgreSQL failed to start"
-                journalctl -u postgresql@14-main --no-pager -n 50
-            fi
-        else
-            echo "PostgreSQL permissions are correct."
-        fi
-    else
-        echo "PostgreSQL data directory does not exist, skipping check."
-    fi
-else
-    echo "Skipping PostgreSQL permission check because SKIP_PGSQL_PERM is true"
 fi
 
 # Start systemd
