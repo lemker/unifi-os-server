@@ -1,9 +1,9 @@
-FROM ghcr.io/lemker/uosserver:02cb044f5ed2-multiarch
+FROM ghcr.io/lemker/uosserver:ab51f5e215ae-multiarch
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 
 ENV container="docker"
-ENV APP_VERSION="5.1.19"
+ENV APP_VERSION="5.1.21"
 ENV APP_MODEL="UOSSERVER"
 ENV PRODUCT_NAME="UniFi OS Server"
 
