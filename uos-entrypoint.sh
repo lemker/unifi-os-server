@@ -26,15 +26,19 @@ else
     exit 1
 fi
 
-echo "Setting APP_MODEL to $APP_MODEL"
-echo "Setting APP_VERSION to $APP_VERSION"
 echo "Setting FIRMWARE_PLATFORM to $FIRMWARE_PLATFORM"
 echo "Setting PRODUCT_NAME to $PRODUCT_NAME"
+echo "Setting APP_MODEL to $APP_MODEL"
+echo "Setting APP_VERSION to $APP_VERSION"
 
 # Read version from package.json and write version string
-echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 echo "$PRODUCT_NAME" > /usr/lib/product_name
+echo "$APP_MODEL" > /usr/lib/app_model
+# Protect Server is mounting /usr/lib/version
+if [ "$APP_MODEL" != "PROTECT_SERVER" ]; then
+    echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
+fi
 
 # Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host) 
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
@@ -64,10 +68,15 @@ chown -R mongodb:mongodb "$MONGODB_LIB_DIR"
 
 # Initialize rabbitmq log dirs
 RABBITMQ_LOG_DIR="/var/log/rabbitmq"
-if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
+if [[ "$APP_MODEL" == "UOSSERVER" && ! -d "$RABBITMQ_LOG_DIR" ]]; then
     mkdir -p "$RABBITMQ_LOG_DIR"
     chown rabbitmq:rabbitmq "$RABBITMQ_LOG_DIR"
     chmod 755 "$RABBITMQ_LOG_DIR"
+fi
+
+# Creating alias for mongodb service so that Network 10.6.77 and up doesn't fail
+if [[ "$APP_MODEL" == "UOSSERVER" && ! -e /etc/systemd/system/unifi-mongodb.service && ! -L /etc/systemd/system/unifi-mongodb.service ]]; then
+    ln -s /lib/systemd/system/mongodb.service /etc/systemd/system/unifi-mongodb.service
 fi
 
 # Apply Synology patches
