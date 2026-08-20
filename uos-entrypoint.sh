@@ -35,6 +35,8 @@ echo "Setting PRODUCT_NAME to $PRODUCT_NAME"
 echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 echo "$PRODUCT_NAME" > /usr/lib/product_name
+# ubnt-tools (UniFi OS Server 5.1.37+) reads the model from this file
+echo "$APP_MODEL" > /usr/lib/app_model
 
 # Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host) 
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
