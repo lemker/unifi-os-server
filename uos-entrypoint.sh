@@ -129,5 +129,22 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
     fi
 fi
 
+# Disable getty services
+if command -v systemctl >/dev/null 2>&1; then
+    echo "Disabling getty services..."
+    systemctl mask \
+        getty@.service \
+        getty@tty1.service \
+        getty@tty2.service \
+        getty@tty3.service \
+        getty@tty4.service \
+        getty@tty5.service \
+        getty@tty6.service \
+        getty.target \
+        console-getty.service \
+        container-getty@.service \
+        serial-getty@.service || true
+fi
+
 # Start systemd
 exec /sbin/init
