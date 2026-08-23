@@ -9,6 +9,10 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 >
 > <https://help.ui.com/hc/en-us/articles/34210126298775-Self-Hosting-UniFi>
 
+## Current Version
+
+The current version of Unifi OS Server in this repo is: 5.1.37
+
 # Installation
 
 ## Docker Compose
