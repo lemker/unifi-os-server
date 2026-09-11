@@ -66,6 +66,17 @@ fi
 MONGODB_LIB_DIR="/var/lib/mongodb"
 chown -R mongodb:mongodb "$MONGODB_LIB_DIR"
 
+# Initialize postgresql data dir permissions
+PGDATA="/data/postgresql"
+if [ -d "$PGDATA" ]; then
+    echo "Setting PostgreSQL permissions"
+    chown -R postgres:postgres "$PGDATA"
+    find "$PGDATA" -type d -exec chmod 755 {} \;
+    find "$PGDATA" -type f -exec chmod 644 {} \;
+    find "$PGDATA/14/main/data" -type d -exec chmod 700 {} \;
+    find "$PGDATA/14/main/data" -type f -exec chmod 600 {} \;
+fi
+
 # Initialize rabbitmq log dirs
 RABBITMQ_LOG_DIR="/var/log/rabbitmq"
 if [[ "$APP_MODEL" == "UOSSERVER" && ! -d "$RABBITMQ_LOG_DIR" ]]; then
