@@ -1,5 +1,39 @@
 #!/bin/bash
 
+# Home Assistant detection
+if [ -f /data/options.json ]; then
+    echo "Home Assistant detected, applying setup..."
+
+    # Map app options to environment variables (read before /data is replaced below)
+    HA_SYSTEM_IP=$(jq -r '.UOS_SYSTEM_IP // empty' /data/options.json)
+
+    # Fall back to the IP of Home Assistant's primary network interface
+    if [ -z "$HA_SYSTEM_IP" ] && [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+        HA_SYSTEM_IP=$(curl -fsS -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info \
+            | jq -r '[.data.interfaces[] | select(.primary)][0].ipv4.address[0] // empty | split("/")[0]')
+    fi
+
+    if [ -n "$HA_SYSTEM_IP" ]; then
+        export UOS_SYSTEM_IP="$HA_SYSTEM_IP"
+    fi
+
+    # Mount read-only cgroup v2
+    mount -o remount,rw /sys/fs/cgroup
+
+    # Setup tmpfs mounts
+    mount -t tmpfs -o exec tmpfs /tmp
+    mkdir -p /var/lib/journal /var/opt/unifi/tmp
+    mount -t tmpfs tmpfs /var/lib/journal
+    mount -t tmpfs -o size=64m tmpfs /var/opt/unifi/tmp
+
+    # Keep all persistent volumes, including /data, in the app config folder so
+    # uninstalling the app keeps or removes them together
+    for dir in /data /persistent /var/log /srv /var/lib/unifi /var/lib/mongodb /etc/rabbitmq/ssl; do
+        mkdir -p "/config$dir" "$dir"
+        mount --bind "/config$dir" "$dir"
+    done
+fi
+
 # Persist UOS_UUID env var
 if [ ! -f /data/uos_uuid ]; then
     if [ -n "${UOS_UUID+1}" ]; then

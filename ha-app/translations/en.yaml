@@ -1,0 +1,6 @@
+configuration:
+  UOS_SYSTEM_IP:
+    name: UOS_SYSTEM_IP
+    description: >-
+      Hostname (recommended) or IP address devices use for inform.
+      If left empty, the IP address of Home Assistant's primary network interface is used.
