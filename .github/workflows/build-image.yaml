@@ -11,6 +11,8 @@ on:
       - '**.md'
       - 'docker-compose.yaml'
       - 'renovate.json'
+      - 'ha-app/**'
+      - 'repository.yaml'
 
 env:
   REGISTRY: ghcr.io

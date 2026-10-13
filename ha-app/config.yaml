@@ -1,0 +1,56 @@
+name: UniFi OS Server
+version: "v1.8.0"
+slug: unifi_os_server
+image: ghcr.io/lemker/unifi-os-server
+description: UniFi OS Server in Home Assistant
+url: https://github.com/lemker/unifi-os-server
+homeassistant: "2026.8.0"
+arch:
+  - amd64
+  - aarch64
+hassio_api: true
+startup: services
+boot: auto
+init: false
+timeout: 120
+apparmor: false
+privileged:
+  - NET_ADMIN
+  - NET_RAW
+  - SYS_ADMIN
+map:
+  - type: app_config
+    read_only: false
+webui: "https://[HOST]:[PORT:443]/"
+ports:
+  443/tcp: 11443
+  8080/tcp: 8080
+  3478/udp: null
+  10003/udp: null
+  5005/tcp: null
+  9543/tcp: null
+  6789/tcp: null
+  8444/tcp: null
+  5514/udp: null
+  5671/tcp: null
+  8880/tcp: null
+  8881/tcp: null
+  8882/tcp: null
+ports_description:
+  443/tcp: UniFi OS Server GUI/API
+  8080/tcp: Device and application communication
+  3478/udp: STUN for device adoption and communication
+  10003/udp: Device discovery during adoption
+  5005/tcp: RTP control protocol
+  9543/tcp: UniFi Identity Hub
+  6789/tcp: UniFi mobile speed test
+  8444/tcp: Secure Portal for Hotspot
+  5514/udp: Remote syslog capture
+  5671/tcp: AQMPS
+  8880/tcp: Hotspot portal redirection (HTTP)
+  8881/tcp: Hotspot portal redirection (HTTP)
+  8882/tcp: Hotspot portal redirection (HTTP)
+options:
+  UOS_SYSTEM_IP: ""
+schema:
+  UOS_SYSTEM_IP: str?
