@@ -9,6 +9,8 @@ ENV PRODUCT_NAME="UniFi OS Server"
 
 STOPSIGNAL SIGRTMIN+3
 
+RUN ["systemctl", "mask", "getty.target", "getty@.service", "serial-getty@.service", "console-getty.service", "container-getty@.service"]
+
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 
 RUN ["chmod", "+x", "/root/uos-entrypoint.sh"]
