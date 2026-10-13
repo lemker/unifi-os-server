@@ -32,6 +32,8 @@ if [ -f /data/options.json ]; then
         mkdir -p "/config$dir" "$dir"
         mount --bind "/config$dir" "$dir"
     done
+    
+    echo "Home Assistant setup applied!"
 fi
 
 # Persist UOS_UUID env var

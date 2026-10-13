@@ -19,6 +19,15 @@ All UniFi OS Server data (`/data`, `/persistent`, `/var/log`, `/srv`, `/var/lib/
 
 Optional UniFi OS Server ports (STUN, discovery, hotspot, syslog, etc.) are disabled. Enable them in the **Network** section of the app's **Configuration** tab.
 
+## Web UI and HSTS
+
+**Open Web UI** opens port 11443 on the same address you use for Home Assistant. UniFi OS Server uses a self-signed certificate, so if you reach Home Assistant through a domain that sends HSTS (for example `ha.example.com`), the browser blocks the page with no way to continue.
+
+To work around it, either:
+
+- Open the web UI by IP address, for example `https://<IP>:11443`.
+- Upload a certificate for your domain in UniFi OS Server's own certificate settings.
+
 ## Security
 
 systemd inside the container needs `SYS_ADMIN` and AppArmor disabled to mount its filesystems. Supervisor API access is required to detect Home Assistant IP address.
