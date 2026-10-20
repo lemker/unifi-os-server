@@ -8,5 +8,27 @@
   "prHourlyLimit": 10,
   "minimumReleaseAge": "1 week",
   "internalChecksFilter": "strict",
-  "ignorePaths": ["Dockerfile"]
+  "ignorePaths": ["Dockerfile"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Keep the Home Assistant app version in sync with the released image",
+      "managerFilePatterns": ["/^ha-app/config\\.yaml$/"],
+      "matchStrings": [
+        "\\nversion: \"(?<currentValue>[^\"]+)\"[\\s\\S]*?\\nimage: (?<depName>\\S+)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Bump the app as soon as a release image is published",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["ghcr.io/lemker/unifi-os-server"],
+      "minimumReleaseAge": null,
+      "commitMessageTopic": "Home Assistant app",
+      "commitMessageExtra": "to {{newValue}}"
+    }
+  ]
 }

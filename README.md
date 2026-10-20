@@ -15,6 +15,18 @@ Run [UniFi OS Server](https://blog.ui.com/article/introducing-unifi-os-server) d
 
 See [docker-compose.yaml](https://github.com/lemker/unifi-os-server/blob/main/docker-compose.yaml)
 
+## Home Assistant
+
+1. In Home Assistant, go to **[Settings → Apps → App store](https://my.home-assistant.io/redirect/supervisor_store/)**, click **⋮ → Repositories**, fill in `https://github.com/lemker/unifi-os-server`, and click **Add → Close**. Or click the **Add repository** button below, then click **Add → Close**.
+
+   [![Open your Home Assistant instance and show the add app repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Flemker%2Funifi-os-server)
+
+1. Click the **UniFi OS Server** app, click **Install**, and wait until it's installed.
+1. Optionally, set **UOS_SYSTEM_IP** on the **Configuration** tab. If left empty, the app uses Home Assistant's IP address.
+1. On the **Info** tab, click **Start**, wait a few minutes, and click **Open Web UI**.
+
+For storage, ports, and security notes, see [ha-app/DOCS.md](ha-app/DOCS.md).
+
 ## Kubernetes
 
 See [kubernetes](https://github.com/lemker/unifi-os-server/tree/main/kubernetes)
@@ -92,3 +104,10 @@ The `uosserver` image is provided by UniFi, extracted from the installation bina
 ## Why does the container need specific settings for cgroup and tmpfs?
 
 The underlying structure of UniFi OS Server runs every component as systemd services which requires access to the host `cgroup`.
+
+# Legal
+
+This project is not affiliated with, endorsed by, or supported by Ubiquiti Inc.
+UniFi, the UniFi logo, and UniFi OS are trademarks of Ubiquiti Inc. and are used here only to identify the software this project runs.
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). UniFi OS Server itself is proprietary software owned by Ubiquiti Inc. and is subject to its own license terms.

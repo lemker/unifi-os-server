@@ -1,13 +1,15 @@
-FROM ghcr.io/lemker/uosserver:ab51f5e215ae-multiarch
+FROM ghcr.io/lemker/uosserver:c9603dec9010-multiarch
 
 LABEL org.opencontainers.image.source="https://github.com/lemker/unifi-os-server"
 
 ENV container="docker"
-ENV APP_VERSION="5.1.21"
+ENV APP_VERSION="5.1.42"
 ENV APP_MODEL="UOSSERVER"
 ENV PRODUCT_NAME="UniFi OS Server"
 
 STOPSIGNAL SIGRTMIN+3
+
+RUN ["systemctl", "mask", "getty.target", "getty@.service", "serial-getty@.service", "console-getty.service", "container-getty@.service"]
 
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 

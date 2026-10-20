@@ -1,5 +1,41 @@
 #!/bin/bash
 
+# Home Assistant detection
+if [ -f /data/options.json ]; then
+    echo "Home Assistant detected, applying setup..."
+
+    # Map app options to environment variables (read before /data is replaced below)
+    HA_SYSTEM_IP=$(jq -r '.UOS_SYSTEM_IP // empty' /data/options.json)
+
+    # Fall back to the IP of Home Assistant's primary network interface
+    if [ -z "$HA_SYSTEM_IP" ] && [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+        HA_SYSTEM_IP=$(curl -fsS -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info \
+            | jq -r '[.data.interfaces[] | select(.primary)][0].ipv4.address[0] // empty | split("/")[0]')
+    fi
+
+    if [ -n "$HA_SYSTEM_IP" ]; then
+        export UOS_SYSTEM_IP="$HA_SYSTEM_IP"
+    fi
+
+    # Mount read-only cgroup v2
+    mount -o remount,rw /sys/fs/cgroup
+
+    # Setup tmpfs mounts
+    mount -t tmpfs -o exec tmpfs /tmp
+    mkdir -p /var/lib/journal /var/opt/unifi/tmp
+    mount -t tmpfs tmpfs /var/lib/journal
+    mount -t tmpfs -o size=64m tmpfs /var/opt/unifi/tmp
+
+    # Keep all persistent volumes, including /data, in the app config folder so
+    # uninstalling the app keeps or removes them together
+    for dir in /data /persistent /var/log /srv /var/lib/unifi /var/lib/mongodb /etc/rabbitmq/ssl; do
+        mkdir -p "/config$dir" "$dir"
+        mount --bind "/config$dir" "$dir"
+    done
+    
+    echo "Home Assistant setup applied!"
+fi
+
 # Persist UOS_UUID env var
 if [ ! -f /data/uos_uuid ]; then
     if [ -n "${UOS_UUID+1}" ]; then
@@ -26,15 +62,19 @@ else
     exit 1
 fi
 
-echo "Setting APP_MODEL to $APP_MODEL"
-echo "Setting APP_VERSION to $APP_VERSION"
 echo "Setting FIRMWARE_PLATFORM to $FIRMWARE_PLATFORM"
 echo "Setting PRODUCT_NAME to $PRODUCT_NAME"
+echo "Setting APP_MODEL to $APP_MODEL"
+echo "Setting APP_VERSION to $APP_VERSION"
 
 # Read version from package.json and write version string
-echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 echo "$PRODUCT_NAME" > /usr/lib/product_name
+echo "$APP_MODEL" > /usr/lib/app_model
+# Protect Server is mounting /usr/lib/version
+if [ "$APP_MODEL" != "PROTECT_SERVER" ]; then
+    echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
+fi
 
 # Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host) 
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
@@ -75,10 +115,15 @@ fi
 
 # Initialize rabbitmq log dirs
 RABBITMQ_LOG_DIR="/var/log/rabbitmq"
-if [ ! -d "$RABBITMQ_LOG_DIR" ]; then
+if [[ "$APP_MODEL" == "UOSSERVER" && ! -d "$RABBITMQ_LOG_DIR" ]]; then
     mkdir -p "$RABBITMQ_LOG_DIR"
     chown rabbitmq:rabbitmq "$RABBITMQ_LOG_DIR"
     chmod 755 "$RABBITMQ_LOG_DIR"
+fi
+
+# Creating alias for mongodb service so that Network 10.6.77 and up doesn't fail
+if [[ "$APP_MODEL" == "UOSSERVER" && ! -e /etc/systemd/system/unifi-mongodb.service && ! -L /etc/systemd/system/unifi-mongodb.service ]]; then
+    ln -s /lib/systemd/system/mongodb.service /etc/systemd/system/unifi-mongodb.service
 fi
 
 # Apply Synology patches
