@@ -56,7 +56,7 @@ ARCH="$(dpkg --print-architecture)"
 if [ "$ARCH" == "amd64" ]; then
     FIRMWARE_PLATFORM=linux-x64
 elif [ "$ARCH" == "arm64" ]; then
-    FIRMWARE_PLATFORM=arm64
+    FIRMWARE_PLATFORM=linux-arm64
 else
     echo "FIRMWARE_PLATFORM not found for $ARCH"
     exit 1
