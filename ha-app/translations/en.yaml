@@ -4,3 +4,49 @@ configuration:
     description: >-
       Hostname (recommended) or IP address devices use for inform.
       If left empty, the IP address of Home Assistant's primary network interface is used.
+  reduce_resources:
+    name: Reduce Resources
+    description: >-
+      Optional CPU and RAM tuning, applied with systemd drop-ins and config only.
+      Off by default: turn Resource tuning on and restart to apply it.
+    fields:
+      UOS_TUNING:
+        name: Resource tuning
+        description: >-
+          Master switch for all CPU/RAM tuning below. Off by default (stock behaviour);
+          takes effect on restart.
+      UOS_JVM_MAX_HEAP_MB:
+        name: UniFi Network max heap (MB)
+        description: >-
+          Caps the UniFi Network Java heap. Stock behaviour (0) lets it grow to 70% of
+          the host's RAM. 1024 suits most homes; raise it for hundreds of devices.
+      UOS_JVM_RETURN_MEMORY:
+        name: Return idle Java memory
+        description: >-
+          Lets UniFi Network give unused heap and native memory back to the system when idle
+          (checked every 5 min) and shrink its heap to what it actually uses.
+      UOS_DISABLE_UNUSED_MONGODB:
+        name: Disable unused MongoDB
+        description: >-
+          Turn the stand-alone mongodb.service into a no-op. UniFi Network runs its own MongoDB
+          and nothing connects to the stand-alone one.
+      UOS_JOURNAL_MAX_MB:
+        name: Journal size limit (MB)
+        description: >-
+          The systemd journal is kept in RAM. This caps it (0 = stock, about 10% of /run).
+      UOS_MASK_HOUSEKEEPING_TIMERS:
+        name: Mask housekeeping timers
+        description: >-
+          Stop apt-daily, apt-daily-upgrade and e2scrub timers, which do nothing useful in a container.
+      UOS_MALLOC_ARENA_MAX:
+        name: malloc arenas
+        description: >-
+          Limits glibc malloc arenas for all services to reduce memory fragmentation (0 = stock).
+      UOS_RABBITMQ_SCHEDULERS:
+        name: RabbitMQ scheduler threads
+        description: >-
+          Erlang scheduler threads for RabbitMQ (0 = stock, one per CPU). One thread is plenty
+          for a home controller and saved about 35 MiB on a 4-core host.
+      UOS_JVM_EXTRA_OPTS:
+        name: Extra JVM options
+        description: Advanced. Extra flags appended to the UniFi Network JVM.

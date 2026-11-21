@@ -17,6 +17,16 @@ if [ -f /data/options.json ]; then
         export UOS_SYSTEM_IP="$HA_SYSTEM_IP"
     fi
 
+    # Map the "reduce_resources" option group to UOS_* environment variables
+    for opt in UOS_TUNING UOS_JVM_MAX_HEAP_MB UOS_JVM_RETURN_MEMORY UOS_JVM_EXTRA_OPTS UOS_DISABLE_UNUSED_MONGODB \
+               UOS_RABBITMQ_SCHEDULERS UOS_JOURNAL_MAX_MB UOS_MASK_HOUSEKEEPING_TIMERS \
+               UOS_MALLOC_ARENA_MAX; do
+        val=$(jq -r --arg k "$opt" '.reduce_resources // {} | if has($k) and .[$k] != null then .[$k] | tostring else empty end' /data/options.json)
+        if [ -n "$val" ]; then
+            export "$opt=$val"
+        fi
+    done
+
     # Mount read-only cgroup v2
     mount -o remount,rw /sys/fs/cgroup
 
@@ -164,6 +174,10 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
         fi
     fi
 fi
+
+# Apply resource tuning (systemd drop-ins / config only, no UniFi code changes)
+. /root/uos-tuning.sh
+apply_uos_tuning
 
 # Start systemd
 exec /sbin/init

@@ -52,5 +52,25 @@ ports_description:
   8882/tcp: Hotspot portal redirection (HTTP)
 options:
   UOS_SYSTEM_IP: ""
+  reduce_resources:
+    UOS_TUNING: false
+    UOS_JVM_MAX_HEAP_MB: 1024
+    UOS_JVM_RETURN_MEMORY: true
+    UOS_DISABLE_UNUSED_MONGODB: true
+    UOS_JOURNAL_MAX_MB: 32
+    UOS_MASK_HOUSEKEEPING_TIMERS: true
+    UOS_MALLOC_ARENA_MAX: 2
+    UOS_RABBITMQ_SCHEDULERS: 1
+    UOS_JVM_EXTRA_OPTS: ""
 schema:
   UOS_SYSTEM_IP: str?
+  reduce_resources:
+    UOS_TUNING: bool
+    UOS_JVM_MAX_HEAP_MB: int(0,16384)
+    UOS_JVM_RETURN_MEMORY: bool
+    UOS_DISABLE_UNUSED_MONGODB: bool
+    UOS_JOURNAL_MAX_MB: int(0,1024)
+    UOS_MASK_HOUSEKEEPING_TIMERS: bool
+    UOS_MALLOC_ARENA_MAX: int(0,64)
+    UOS_RABBITMQ_SCHEDULERS: int(0,64)
+    UOS_JVM_EXTRA_OPTS: str?
