@@ -162,6 +162,15 @@ if [ ! -f /persistent/.migrated60 ]; then
     fi
 fi
 
+# Log v5 mounts that are no longer needed
+if [[ -f /persistent/.migrated60 && -z "${SUPERVISOR_TOKEN:-}" ]]; then
+    for dir in /var/lib/unifi /var/lib/mongodb; do
+        if mountpoint -q "$dir" && [ -z "$(ls -A "$dir")" ]; then
+            echo "$dir is no longer used, its mount can be removed"
+        fi
+    done
+fi
+
 # Reinstall apps recorded during the migration from their Debian 13 builds
 # Failed apps stay in the list and are retried on next boot
 if [ -s /persistent/.migrated60-apps ]; then
