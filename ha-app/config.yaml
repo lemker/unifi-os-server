@@ -22,12 +22,12 @@ map:
   - type: app_config
     read_only: false
 webui: "https://[HOST]:[PORT:443]/"
+watchdog: "https://[HOST]:[PORT:443]/api/ping"
 ports:
   443/tcp: 11443
   8080/tcp: 8080
   3478/udp: null
   10003/udp: null
-  5005/tcp: null
   9543/tcp: null
   6789/tcp: null
   8444/tcp: null
@@ -36,12 +36,12 @@ ports:
   8880/tcp: null
   8881/tcp: null
   8882/tcp: null
+  28082/tcp: null
 ports_description:
   443/tcp: UniFi OS Server GUI/API
   8080/tcp: Device and application communication
   3478/udp: STUN for device adoption and communication
   10003/udp: Device discovery during adoption
-  5005/tcp: RTP control protocol
   9543/tcp: UniFi Identity Hub
   6789/tcp: UniFi mobile speed test
   8444/tcp: Secure Portal for Hotspot
@@ -50,6 +50,7 @@ ports_description:
   8880/tcp: Hotspot portal redirection (HTTP)
   8881/tcp: Hotspot portal redirection (HTTP)
   8882/tcp: Hotspot portal redirection (HTTP)
+  28082/tcp: Device support files download
 options:
   UOS_SYSTEM_IP: ""
 schema:

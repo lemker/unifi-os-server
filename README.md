@@ -37,12 +37,11 @@ Your ingress controller must be modified to accept extra ports. For example, `in
 
 ```yaml
 tcp:
-  5005: "unifi/unifi-os-server-rtp-svc:5005" # Optional
   9543: "unifi/unifi-os-server-id-hub-svc:9543" # Optional
   6789: "unifi/unifi-os-server-mobile-speedtest-svc:6789" # Optional
   8080: "unifi/unifi-os-server-communication-svc:8080"
   8444: "unifi/unifi-os-server-hotspot-secured-svc:8444" # Optional
-  28082: "unifi/unifi-os-server-support-files:28082" # Optional
+  28082: "unifi/unifi-os-server-support-files-svc:28082" # Optional
   5671: "unifi/unifi-os-server-aqmps-svc:5671" # Optional
   8880: "unifi/unifi-os-server-hotspot-redirect-0-svc:8880" # Optional
   8881: "unifi/unifi-os-server-hotspot-redirect-1-svc:8881" # Optional
@@ -82,7 +81,6 @@ Overrides your detected hardware platform. Accepted values are: `synology`.
 | Protocol | Port | Direction | Usage |
 |----|----|----|----|
 | TCP | 11443 | Ingress | UniFi OS Server GUI/API |
-| TCP | 5005 | Ingress | RTP (Real-time Transport Protocol) control protocol |
 | TCP | 9543 | Ingress | UniFi Identity Hub |
 | TCP | 6789 | Ingress | UniFi mobile speed test |
 | TCP | 8080 | Ingress | Device and application communication |
