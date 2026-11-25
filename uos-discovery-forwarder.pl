@@ -23,8 +23,32 @@ my $out = IO::Socket::INET->new(Proto => 'udp', Broadcast => 1)
 
 print "Forwarding discovery from udp $listen_port to $target_host:$target_port\n";
 
+# Log each device at most every 10 seconds
+my %last_logged;
+
 while (1) {
     my $packet;
-    $in->recv($packet, 2048) or next;
+    my $sender = $in->recv($packet, 2048) or next;
     $out->send($packet, 0, $target);
+
+    my $ip = inet_ntoa((sockaddr_in($sender))[1]);
+
+    # Fields after the 4 byte header: type (1 byte), length (2 bytes), value
+    my %fields;
+    my $offset = 4;
+    while ($offset + 3 <= length $packet) {
+        my ($type, $length) = unpack 'Cn', substr($packet, $offset, 3);
+        last if $offset + 3 + $length > length $packet;
+        $fields{$type} //= substr($packet, $offset + 3, $length);
+        $offset += 3 + $length;
+    }
+    my $mac = length($fields{0x01} // '') == 6 ? join(':', unpack '(H2)6', $fields{0x01}) : 'unknown';
+    my $name = $fields{0x0B} // 'unknown';
+    my $model = $fields{0x14} // $fields{0x0C} // 'unknown';
+
+    my $now = time;
+    if (($last_logged{"$ip $mac"} // 0) <= $now - 10) {
+        $last_logged{"$ip $mac"} = $now;
+        print "Forwarded discovery from $ip: $name ($model, $mac)\n";
+    }
 }
