@@ -111,9 +111,9 @@ metadata:
 spec:
   ports:
     - name: discovery
-      port: 10003
+      port: 10001
       protocol: UDP
-      targetPort: 10003
+      targetPort: 10002
   selector:
     app: unifi-os-server
 

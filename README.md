@@ -47,9 +47,9 @@ tcp:
   8881: "unifi/unifi-os-server-hotspot-redirect-1-svc:8881" # Optional
   8882: "unifi/unifi-os-server-hotspot-redirect-2-svc:8882" # Optional
 udp:
-  3478: "unifi/unifi-os-server-stun-svc:3478"
+  3478: "unifi/unifi-os-server-stun-svc:3478" # Optional
   5514: "unifi/unifi-os-server-syslog-svc:5514" # Optional
-  10003: "unifi/unifi-os-server-discovery-svc:10003"
+  10001: "unifi/unifi-os-server-discovery-svc:10001"
 ```
 
 # Parameters
@@ -87,7 +87,7 @@ Overrides your detected hardware platform. Accepted values are: `synology`.
 | TCP | 8444 | Ingress | Secure Portal for Hotspot |
 | UDP | 3478 | Both | STUN for device adoption and communication *(also required for Remote Management)* |
 | UDP | 5514 | Ingress | Remote syslog capture |
-| UDP | 10003 | Ingress | Device discovery during adoption |
+| UDP | 10001 | Ingress | Device discovery during adoption |
 | TCP | 28082 | Ingress | Device support files download |
 | TCP | 5671 | Ingress | AQMPS |
 | TCP | 8880 | Ingress | Hotspot portal redirection (HTTP) |

@@ -27,7 +27,7 @@ ports:
   443/tcp: 11443
   8080/tcp: 8080
   3478/udp: null
-  10003/udp: null
+  10002/udp: 10001
   9543/tcp: null
   6789/tcp: null
   8444/tcp: null
@@ -41,7 +41,7 @@ ports_description:
   443/tcp: UniFi OS Server GUI/API
   8080/tcp: Device and application communication
   3478/udp: STUN for device adoption and communication
-  10003/udp: Device discovery during adoption
+  10002/udp: Device discovery during adoption
   9543/tcp: UniFi Identity Hub
   6789/tcp: UniFi mobile speed test
   8444/tcp: Secure Portal for Hotspot

@@ -34,9 +34,9 @@ services:
       - 6789:6789 # Optional
       - 8080:8080
       - 8444:8444 # Optional
-      - 3478:3478/udp
+      - 3478:3478/udp # Optional
       - 5514:5514/udp # Optional
-      - 10003:10003/udp
+      - 10001:10002/udp
       - 127.0.0.1:11084:11084 # Optional
       - 5671:5671 # Optional
       - 8880:8880 # Optional

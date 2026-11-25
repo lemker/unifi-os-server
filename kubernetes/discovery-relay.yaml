@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-os-server-discovery-relay
+  namespace: unifi
+  labels:
+    app: unifi-os-server-discovery-relay
+spec:
+  selector:
+    matchLabels:
+      app: unifi-os-server-discovery-relay
+  template:
+    metadata:
+      labels:
+        app: unifi-os-server-discovery-relay
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: discovery-relay
+          image: ghcr.io/lemker/unifi-os-server:latest
+          command:
+            - /usr/local/sbin/uos-discovery-forwarder
+            - "10001"
+            - unifi-os-server-discovery-svc.unifi.svc.cluster.local:10001

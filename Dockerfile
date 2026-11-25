@@ -14,7 +14,8 @@ RUN ["systemctl", "mask", "getty.target", "getty@.service", "serial-getty@.servi
 COPY uos-patch-ui.sh /tmp/uos-patch-ui.sh
 RUN ["bash", "-c", "bash /tmp/uos-patch-ui.sh && rm /tmp/uos-patch-ui.sh"]
 
+COPY uos-discovery-forwarder.pl /usr/local/sbin/uos-discovery-forwarder
 COPY uos-entrypoint.sh /root/uos-entrypoint.sh
 
-RUN ["chmod", "+x", "/root/uos-entrypoint.sh"]
+RUN ["chmod", "+x", "/usr/local/sbin/uos-discovery-forwarder", "/root/uos-entrypoint.sh"]
 ENTRYPOINT ["/root/uos-entrypoint.sh"]

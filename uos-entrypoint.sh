@@ -194,6 +194,23 @@ EOF
     ln -sf ../uos-reinstall-apps.service /etc/systemd/system/multi-user.target.wants/uos-reinstall-apps.service
 fi
 
+# Forward device discovery to uos-discovery-client
+cat > /etc/systemd/system/uos-discovery-forwarder.service <<'EOF'
+[Unit]
+Description=Forward UniFi device discovery to the UniFi OS discovery client
+After=uos-discovery-client.service
+
+[Service]
+ExecStart=/usr/local/sbin/uos-discovery-forwarder
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+mkdir -p /etc/systemd/system/multi-user.target.wants
+ln -sf ../uos-discovery-forwarder.service /etc/systemd/system/multi-user.target.wants/uos-discovery-forwarder.service
+
 # Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host)
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
     ip link add name eth0 link tap0 type macvlan

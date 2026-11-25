@@ -16,8 +16,9 @@ All UniFi OS Server data (`/data`, `/persistent`, `/var/log`, `/srv`, `/var/lib/
 |----|----|
 | 11443/tcp | UniFi OS Server GUI/API |
 | 8080/tcp | Device and application communication |
+| 10001/udp | Device discovery during adoption |
 
-Optional UniFi OS Server ports (STUN, discovery, hotspot, syslog, etc.) are disabled. Enable them in the **Network** section of the app's **Configuration** tab.
+Optional UniFi OS Server ports (STUN, hotspot, syslog, etc.) are disabled. Enable them in the **Network** section of the app's **Configuration** tab.
 
 ## Web UI and HSTS
 
