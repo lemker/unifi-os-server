@@ -18,6 +18,7 @@ spec:
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 5
       containers:
         - name: discovery-relay
           image: ghcr.io/lemker/unifi-os-server:latest
