@@ -31,7 +31,12 @@ spec:
           lifecycle:
             postStart:
               exec:
-                command: ["/bin/bash", "-c", "echo $HOST_IP host.docker.internal >> /etc/hosts"]
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    grep -q host.containers.internal /etc/hosts \
+                      || echo "$HOST_IP host.docker.internal host.containers.internal" >> /etc/hosts
           volumeMounts:
             - name: unifi-os-server-data
               mountPath: /persistent
