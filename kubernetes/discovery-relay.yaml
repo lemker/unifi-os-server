@@ -6,6 +6,8 @@ metadata:
   labels:
     app: unifi-os-server-discovery-relay
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: unifi-os-server-discovery-relay
