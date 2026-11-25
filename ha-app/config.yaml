@@ -1,5 +1,5 @@
 name: UniFi OS Server
-version: "v1.8.0"
+version: "discovery"
 slug: unifi_os_server
 image: ghcr.io/lemker/unifi-os-server
 description: UniFi OS Server in Home Assistant
