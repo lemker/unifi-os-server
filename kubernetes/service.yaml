@@ -16,21 +16,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: unifi-os-server-rtp-svc
-  namespace: unifi
-spec:
-  ports:
-    - name: rtp
-      port: 5005
-      protocol: TCP
-      targetPort: 5005
-  selector:
-    app: unifi-os-server
-
----
-apiVersion: v1
-kind: Service
-metadata:
   name: unifi-os-server-id-hub-svc
   namespace: unifi
 spec:

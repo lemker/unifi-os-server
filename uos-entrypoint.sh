@@ -36,6 +36,11 @@ if [ -f /data/options.json ]; then
     echo "Home Assistant setup applied!"
 fi
 
+# Expected by /usr/sbin/bootup-invoker
+if [ ! -d "/persistent/.config" ]; then
+    mkdir -p "/persistent/.config"
+fi
+
 # Persist UOS_UUID env var
 if [ ! -f /data/uos_uuid ]; then
     if [ -n "${UOS_UUID+1}" ]; then
@@ -71,16 +76,146 @@ echo "Setting APP_VERSION to $APP_VERSION"
 echo "$FIRMWARE_PLATFORM" > /usr/lib/platform
 echo "$PRODUCT_NAME" > /usr/lib/product_name
 echo "$APP_MODEL" > /usr/lib/app_model
+
 # Protect Server is mounting /usr/lib/version
 if [ "$APP_MODEL" != "PROTECT_SERVER" ]; then
-    echo "$APP_MODEL.0000000.$APP_VERSION.0000000.000000.0000" > /usr/lib/version
+    echo "$APP_MODEL.0000000.v$APP_VERSION.0000000.000000.0000" > /usr/lib/version
 fi
 
-# Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host) 
+# Move UniFi Network data from /var/lib/unifi to /data/unifi/data (v5 to v6)
+UNIFI_DATA_DIR="/data/unifi/data"
+if [[ "$APP_MODEL" == "UOSSERVER" && -d /var/lib/unifi/db && ! -e "$UNIFI_DATA_DIR" ]]; then
+    echo "Moving UniFi Network data to $UNIFI_DATA_DIR..."
+    mkdir -p /data/unifi
+    rm -rf "$UNIFI_DATA_DIR.migrating"
+
+    # Copy to a temporary dir first so an interrupted copy is retried on next start
+    if cp -a /var/lib/unifi/. "$UNIFI_DATA_DIR.migrating/" && sync; then
+        mv "$UNIFI_DATA_DIR.migrating" "$UNIFI_DATA_DIR"
+        find /var/lib/unifi -mindepth 1 -delete
+        echo "UniFi Network data moved!"
+    else
+        echo "Moving UniFi Network data failed!" >&2
+        rm -rf "$UNIFI_DATA_DIR.migrating"
+    fi
+fi
+
+# Migration to Trixie
+if [ ! -f /persistent/.migrated60 ]; then
+    major=$(cut -d. -f3 /persistent/.config/version 2>/dev/null)
+    major="${major#v}"
+    migration_ok=1
+
+    if [ -n "$major" ] && [ "$major" -lt 6 ]; then
+        echo "Migrating to Debian 13..."
+
+        if [ "$APP_MODEL" == "UOSSERVER" ]; then
+            # /var/lib/mongodb was never used (the real db lives in /var/lib/unifi/db), so removing it is cleanup only.
+            rm -rf /var/lib/mongodb/*
+            chown -hR unifi:unifi /var/lib/unifi
+            # Restore java memory limit & remote mongodb connection string.
+            # Copy as the unifi user: both paths are unifi-controlled, so a planted symlink
+            # must not be followed with root privileges.
+            if [ -f /data/unifi/data/env-overrides ]; then
+                runuser -u unifi -- cp /data/unifi/data/env-overrides /var/lib/unifi/env-overrides
+            fi
+        fi
+
+        if [ -d /data/unifi-core/firmware ]; then
+            if cp -a /data/unifi-core/firmware/. /persistent/unifi-core/ && sync; then
+                rm -rf /data/unifi-core/firmware/
+            else
+                echo "Copying unifi-core firmware failed!" >&2
+                migration_ok=0
+            fi
+        fi
+
+        chown -hR postgres:postgres /data/postgresql/14/main/
+        chown -hR postgres:postgres /var/log/postgresql/
+        if [ -d "/data/unifi/data" ]; then
+            chown -hR unifi:unifi /data/unifi/
+        fi
+
+        # Record installed apps the image doesn't ship, to reinstall once UniFi OS is running
+        if [ -d /persistent/dpkg/bullseye/actions ]; then
+            rm -f /persistent/.migrated60-apps
+            for action in /persistent/dpkg/bullseye/actions/*; do
+                app=$(basename "$action")
+                if [ "$(cat "$action" 2>/dev/null)" == "unpack" ] \
+                    && [ "$(dpkg-query -W -f '${Status}' "$app" 2>/dev/null)" != "install ok installed" ]; then
+                    echo "$app" >> /persistent/.migrated60-apps
+                fi
+            done
+        fi
+
+        # Remove Debian 11 package cache
+        rm -rf /persistent/dpkg/bullseye
+
+        if [ "$migration_ok" -eq 1 ]; then
+            echo "Migrated to Debian 13!"
+        fi
+    fi
+
+    # Only mark done when every step succeeded, so a partial migration is retried on next boot.
+    if [ "$migration_ok" -eq 1 ]; then
+        touch /persistent/.migrated60
+    fi
+fi
+
+# Log v5 mounts that are no longer needed
+if [[ -f /persistent/.migrated60 && -z "${SUPERVISOR_TOKEN:-}" ]]; then
+    for dir in /var/lib/unifi /var/lib/mongodb; do
+        if mountpoint -q "$dir" && [ -z "$(ls -A "$dir")" ]; then
+            echo "$dir is no longer used, its mount can be removed"
+        fi
+    done
+fi
+
+# Reinstall apps recorded during the migration from their Debian 13 builds
+# Failed apps stay in the list and are retried on next boot
+if [ -s /persistent/.migrated60-apps ]; then
+    echo "Reinstalling apps after start: $(tr '\n' ' ' < /persistent/.migrated60-apps)"
+    cat > /etc/systemd/system/uos-reinstall-apps.service <<'EOF'
+[Unit]
+Description=Reinstall UniFi OS apps after migration to Debian 13
+ConditionPathExists=/persistent/.migrated60-apps
+After=unifi-core.service uos-agent.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=30min
+ExecStart=/bin/bash -c 'rm -f /persistent/.migrated60-apps.failed; while read -r app; do uos runnable install "$$app" || echo "$$app" >> /persistent/.migrated60-apps.failed; done < /persistent/.migrated60-apps; if [ -f /persistent/.migrated60-apps.failed ]; then mv -f /persistent/.migrated60-apps.failed /persistent/.migrated60-apps; exit 1; fi; rm -f /persistent/.migrated60-apps'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    mkdir -p /etc/systemd/system/multi-user.target.wants
+    ln -sf ../uos-reinstall-apps.service /etc/systemd/system/multi-user.target.wants/uos-reinstall-apps.service
+fi
+
+# Create eth0 alias to tap0 (requires NET_ADMIN cap & macvlan kernel module loaded on host)
 if [ ! -d "/sys/devices/virtual/net/eth0" ] && [ -d "/sys/devices/virtual/net/tap0" ]; then
     ip link add name eth0 link tap0 type macvlan
     ip link set eth0 up
-fi 
+fi
+
+# Fix PostgreSQL permissions, bind mounts can come up owned by another user
+# /data/postgresql, the version dir, and .configured stay owned by root
+for PG_CLUSTER_DIR in /data/postgresql/*/*/; do
+    PG_CLUSTER_DIR="${PG_CLUSTER_DIR%/}"
+    PG_DATA_DIR="$PG_CLUSTER_DIR/data"
+    [ -d "$PG_DATA_DIR" ] || continue
+
+    PG_MODE=$(stat -c %a "$PG_DATA_DIR")
+    if [[ "$PG_MODE" != "700" && "$PG_MODE" != "750" ]] \
+        || [ -n "$(find "$PG_CLUSTER_DIR" -path "$PG_CLUSTER_DIR/.configured" -prune -o ! -user postgres -print -quit)" ]; then
+        echo "Fixing PostgreSQL permissions for $PG_CLUSTER_DIR..."
+        chown postgres:postgres "$PG_CLUSTER_DIR"
+        find "$PG_CLUSTER_DIR" -mindepth 1 -maxdepth 1 ! -name .configured -exec chown -hR postgres:postgres {} +
+        chmod 700 "$PG_DATA_DIR"
+    fi
+done
 
 # Initialize nginx log dirs
 NXINX_LOG_DIR="/var/log/nginx"
@@ -90,29 +225,12 @@ if [ ! -d "$NXINX_LOG_DIR" ]; then
     chmod 755 "$NXINX_LOG_DIR"
 fi
 
-# Initialize mongodb log dirs
-MONGODB_LOG_DIR="/var/log/mongodb"
-if [ ! -d "$MONGODB_LOG_DIR" ]; then
-    mkdir -p "$MONGODB_LOG_DIR"
-    chown mongodb:mongodb "$MONGODB_LOG_DIR"
-    chmod 755 "$MONGODB_LOG_DIR"
-fi
-
-# Initialize mongodb lib dirs
-MONGODB_LIB_DIR="/var/lib/mongodb"
-chown -R mongodb:mongodb "$MONGODB_LIB_DIR"
-
 # Initialize rabbitmq log dirs
 RABBITMQ_LOG_DIR="/var/log/rabbitmq"
 if [[ "$APP_MODEL" == "UOSSERVER" && ! -d "$RABBITMQ_LOG_DIR" ]]; then
     mkdir -p "$RABBITMQ_LOG_DIR"
     chown rabbitmq:rabbitmq "$RABBITMQ_LOG_DIR"
     chmod 755 "$RABBITMQ_LOG_DIR"
-fi
-
-# Creating alias for mongodb service so that Network 10.6.77 and up doesn't fail
-if [[ "$APP_MODEL" == "UOSSERVER" && ! -e /etc/systemd/system/unifi-mongodb.service && ! -L /etc/systemd/system/unifi-mongodb.service ]]; then
-    ln -s /lib/systemd/system/mongodb.service /etc/systemd/system/unifi-mongodb.service
 fi
 
 # Apply Synology patches
@@ -151,9 +269,12 @@ if { [ -f "$SYS_VENDOR" ] && grep -q "Synology" "$SYS_VENDOR"; } \
 fi
 
 # Set UOS_SYSTEM_IP
-UNIFI_SYSTEM_PROPERTIES="/var/lib/unifi/system.properties"
+UNIFI_SYSTEM_PROPERTIES="$UNIFI_DATA_DIR/system.properties"
 if [ -n "${UOS_SYSTEM_IP+1}" ]; then
     echo "Setting UOS_SYSTEM_IP to $UOS_SYSTEM_IP"
+    if [ ! -d "$UNIFI_DATA_DIR" ]; then
+        install -d -o unifi -g unifi /data/unifi "$UNIFI_DATA_DIR"
+    fi
     if [ ! -f "$UNIFI_SYSTEM_PROPERTIES" ]; then
         echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
     else
@@ -163,6 +284,7 @@ if [ -n "${UOS_SYSTEM_IP+1}" ]; then
             echo "system_ip=$UOS_SYSTEM_IP" >> "$UNIFI_SYSTEM_PROPERTIES"
         fi
     fi
+    chown unifi:unifi "$UNIFI_SYSTEM_PROPERTIES"
 fi
 
 # Start systemd
